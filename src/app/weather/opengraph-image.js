@@ -8,7 +8,7 @@ console.log({
 })
 
 
-console.log(fs.readdirSync(testFolder));
+console.log(fs.readdirSync('/'));
 const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
 
