@@ -141,12 +141,12 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
         return (
             <span style={
                 {
-                    maxWidth: '900px',
+                    maxWidth: '1100px',
                     color: '#1B1B1B',
                     fontWeight:"400",
                     fontSize: "95px", 
                     textTransform: "none", 
-                    letterSpacing: '-0.05em',
+                    letterSpacing: '-0.03em',
                     lineHeight: "95px",
                     padding: "50px"
                 }

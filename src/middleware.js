@@ -22,6 +22,11 @@ export function middleware(request) {
         const city = params.city;
         response.cookies.set('city', city) 
     }
+
+    if (params.units) {
+        const units = params.units;
+        response.cookies.set('units', units) 
+    }
     
     return response;
 }

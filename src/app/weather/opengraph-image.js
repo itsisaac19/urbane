@@ -8,11 +8,6 @@ console.log({
 })
 
 
-console.log(fs.readdirSync('/'));
-console.log(fs.readdirSync('./'));
-console.log(fs.readdirSync(process.cwd()));
-console.log(process.cwd());
-const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
 
 
@@ -25,6 +20,8 @@ export const alt = 'URBANE Weather';
 export const contentType = 'image/png';
 
 export default async function og({req}) {
+  const manropeReq = await fetch(`https://fonts.cdnfonts.com/s/16243/manrope-regular.woff`);
+  const manropeArrayBuffer = await manropeReq.arrayBuffer();
 
   const cookieStore = cookies();
   const cookieCoordinates = cookieStore.get('coordinates');
