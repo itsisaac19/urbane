@@ -6,11 +6,9 @@ console.log({
   DEV: process?.env?.DEV,
   BUILD: process?.env?.BUILD
 })
-fs.readdir('./', (err, files) => {
-  files.forEach(file => {
-    console.log(file);
-  });
-});
+
+
+console.log(fs.readdirSync(testFolder));
 const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
 
