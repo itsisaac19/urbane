@@ -159,7 +159,7 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 }
 
 
-
+export const runtime = 'experimental-edge';
 
 export async function generateMetadata({ searchParams  }) {
     const cookieStore = cookies();

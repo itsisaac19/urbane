@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/server'; // REQUIRES NEXT 13.3
-import fs from 'fs';
 
 const publicString = process?.env?.BUILD == 'true' || process?.env?.DEV == 'true' ? './public' : '' 
 console.log({
