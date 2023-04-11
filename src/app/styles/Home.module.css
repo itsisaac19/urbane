@@ -1,0 +1,19 @@
+.hero-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+}
+.hero-middle-section {
+    margin: 0;
+    display: grid;
+}
+.home-urbane-text {
+    font-weight: 400;
+    font-size: 128px;
+
+    letter-spacing: 0.175em;
+}
+.header-grid {
+    display: grid;
+    grid-auto-flow: column;
+    column-gap: 88px;
+}
