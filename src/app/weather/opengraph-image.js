@@ -10,6 +10,7 @@ console.log({
 
 console.log(fs.readdirSync('/'));
 console.log(fs.readdirSync('./'));
+console.log(process.cwd());
 const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
 
