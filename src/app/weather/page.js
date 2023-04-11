@@ -160,19 +160,24 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 
 
 
-export async function generateMetadata({ searchParams  }) {
+export async function generateMetadata() {
     const cookieStore = cookies();
     const city = cookieStore.get('city')?.value;
     console.log('city found in cookie:', {city})
 
-	console.log(searchParams)
-
 	// If (!params)
 
-    console.log(url.href)
+    const host = process.env.NODE_ENV == 'development' ? 'http://localhost:3000' : 'https://urbaneweather.vercel.app'
 
 	return { 
 		title: `Weather for ${city} | URBANE`, 
-		description: 'Welcome to Urbane Weather'
+		description: 'Welcome to Urbane Weather',
+        openGraph: {
+            images: [{
+                url: `${host}/weather/og?lat=45&lon=-93&units=imperial&city=Shoreview`,
+                width: 1200,
+                height: 630,
+            }]
+        }
 	}
   }

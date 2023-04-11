@@ -418,9 +418,11 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
             <span
             style={{
                 maxWidth: '1050px',
+                height: '200px',
+                overflow: 'hidden',
                 fontSize: '40px',
                 color: '#1B1B1B',
-                padding: '10px 50px 0'
+                margin: '10px 50px 0'
             }}
             >{detailedForecast}</span>
         )
