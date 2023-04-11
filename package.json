@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "cross-env BUILD=true next build",
     "start": "next start"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.0.8",
     "chart.js": "^4.2.1",
+    "cross-env": "^7.0.3",
     "dayjs": "^1.11.7",
     "interweave": "^13.1.0",
     "interweave-ssr": "^2.0.0",

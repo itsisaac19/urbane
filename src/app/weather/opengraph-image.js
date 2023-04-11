@@ -1,9 +1,10 @@
 import { ImageResponse } from 'next/server'; // REQUIRES NEXT 13.3
 import fs from 'fs';
 
-const publicString = process?.env?.DEV == 'true' ? './public' : './public' 
+const publicString = process?.env?.BUILD == 'true' || process?.env?.DEV == 'true' ? './public' : '' 
 console.log({
-  DEV: process?.env?.DEV
+  DEV: process?.env?.DEV,
+  BUILD: process?.env?.BUILD
 })
 const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
