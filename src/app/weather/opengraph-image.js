@@ -7,7 +7,7 @@ console.log({
 })
 
 
-
+export const runtime = 'experimental-edge';
 
 
 import styles from '../styles/weather.module.css';
