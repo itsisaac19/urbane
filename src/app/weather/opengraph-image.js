@@ -7,6 +7,16 @@ console.log({
 })
 const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
+try {
+  fs.readdir('./', (err, files) => {
+    files.forEach(file => {
+      console.log(file);
+    });
+  });
+} catch (error) {
+  console.error(error)
+}
+
 import styles from '../styles/weather.module.css';
 import { WeatherHeader, DetailedWeather } from './Components/server';
 import { cookies } from 'next/headers';
