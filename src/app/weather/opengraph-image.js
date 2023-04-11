@@ -1,7 +1,11 @@
 import { ImageResponse } from 'next/server'; // REQUIRES NEXT 13.3
 import fs from 'fs';
 
-const manropeArrayBuffer = fs.readFileSync('./public/manrope-latin-400-normal.ttf')
+const publicString = process?.env?.DEV == 'true' ? './public' : '' 
+console.log({
+  DEV: process?.env?.DEV
+})
+const manropeArrayBuffer = fs.readFileSync(`${publicString}/manrope-latin-400-normal.ttf`)
 
 import styles from '../styles/weather.module.css';
 import { WeatherHeader, DetailedWeather } from './Components/server';
