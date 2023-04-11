@@ -167,17 +167,11 @@ export async function generateMetadata({ searchParams  }) {
 
 	console.log(searchParams)
 
-    const url = new URL('http://localhost:3000?');
-    Object.entries(searchParams).forEach(entry => {
-        url.searchParams.append(entry[0], entry[1])
-    })
-
 	// If (!params)
 
     console.log(url.href)
 
 	return { 
-        metadataBase: url.href,
 		title: `Weather for ${city} | URBANE`, 
 		description: 'Welcome to Urbane Weather'
 	}
