@@ -5,18 +5,24 @@ import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar } from './Compone
 import { Navbar } from "@/app/navbar/navbar";
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 const dayjs = require('dayjs');
 
-
-async function getData({latitude, longitude}) {
-
-}
-
-export default async function Home({ coordinates = [45, -93], city = 'Shoreview' }) {
+export default async function Home({ searchParams }) {
     const cookieStore = cookies();
     const cookieCoordinates = cookieStore.get('coordinates');
     console.log('coords found in cookie:', {cookieCoordinates})
+
+    console.log({searchParams})
+
+    if (!(searchParams.lat && searchParams.lon && searchParams.units && searchParams.city && searchParams.offset)) {
+        redirect('/');
+    }
+
+    const coordinates = [searchParams.lat, searchParams.lon];
+    const city = 'Shoreview';
+    const units = 'imperial';
 
 	const lastReqTime = dayjs().toISOString();
 
@@ -32,7 +38,7 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 								latitude={coordinates[0]}
 								longitude={coordinates[1]}
 								city={city}
-								units={'imperial'}
+								units={units}
 								styles={styles}
 							/>
 						</Suspense>
@@ -84,7 +90,7 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
                                 latitude={coordinates[0]}
                                 longitude={coordinates[1]}
                                 city={city}
-                                units={'imperial'}
+                                units={units}
                                 styles={styles}
                             />
                         </Suspense>
@@ -102,7 +108,7 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 							latitude={coordinates[0]}
 							longitude={coordinates[1]}
 							city={city}
-							units={'imperial'}
+							units={units}
 							styles={styles}
 						/>
 					</Suspense>
@@ -122,7 +128,7 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 										latitude={coordinates[0]}
 										longitude={coordinates[1]}
 										city={city}
-										units={'imperial'}
+										units={units}
 										styles={styles}
 									></Chart>
 								</Suspense>
@@ -160,21 +166,22 @@ export default async function Home({ coordinates = [45, -93], city = 'Shoreview'
 
 
 
-export async function generateMetadata() {
-    const cookieStore = cookies();
-    const city = cookieStore.get('city')?.value;
-    console.log('city found in cookie:', {city})
+export async function generateMetadata(req) {
+    const params = req.searchParams;
 
+    const weatherLocation = params.city;
 	// If (!params)
 
     const host = process.env.NODE_ENV == 'development' ? 'http://localhost:3000' : 'https://urbaneweather.vercel.app'
 
 	return { 
-		title: `Weather for ${city} | URBANE`, 
+		title: `Weather for ${weatherLocation} | URBANE`, 
 		description: 'Welcome to Urbane Weather',
         openGraph: {
+            title: `Current weather for ${weatherLocation} | URBANE`,
+            description: `The current temperature, weather, and detailed forecast from the NWS.`,
             images: [{
-                url: `${host}/weather/og?lat=45&lon=-93&units=imperial&city=Shoreview`,
+                url: `${host}/weather/og?lat=${params.lat}&lon=${params.lon}&units=${params.units}&city=${params.city}&offset=${params.offset}&zone=${params.zone}`,
                 width: 1200,
                 height: 630,
             }]
