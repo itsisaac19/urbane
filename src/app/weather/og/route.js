@@ -15,21 +15,37 @@ const dating = (timeZoneOffset=0, timeZoneName='') => {
 
   console.log('hello', tzDate)
   
-  return (<span
+  return (
+  <div
     style={{
-      padding: '20px 0 0 50px',
+      display: 'flex',
+      padding: '0px 50px 50px 50px',
       marginTop: 'auto',
       fontSize: '20px',
       textTransform: 'uppercase',
       letterSpacing: '0.05em'
     }}
-    >{dayjs().utcOffset(parseInt(timeZoneOffset)).format('h:mm a dddd MMMM D z')} {timeZoneName} {` |  UTC ${offsetDirection}${dayjs().startOf('day').add(Math.abs(parseInt(timeZoneOffset)), 'minutes').format('HH:mm')}`}</span>
+  >
+  <span
+    style={{
+
+    }}
+    >{dayjs().utcOffset(parseInt(timeZoneOffset)).format('h:mm a dddd MMMM D')}</span>
+    <span
+    style={{
+      marginLeft: 'auto'
+    }}>
+      {dayjs().format('z')} {timeZoneName} {` |  UTC ${offsetDirection}${dayjs().startOf('day').add(Math.abs(parseInt(timeZoneOffset)), 'minutes').format('HH:mm')}`}
+    </span>
+    </div>
   )
 }
 
 export const runtime = 'experimental-edge';
  
 export const size = { width: 1200, height: 630 }; // Optimized from https://iamturns.com/open-graph-image-size/
+export const contentType = 'image/png';
+export const alt = `The current temperature and weather. Detailed forecast from the NWS.`;
 
 // Make sure the font exists in the specified path:
 const font = fetch(new URL('../../../../assets/manrope-latin-400-normal.ttf', import.meta.url)).then(
@@ -69,6 +85,8 @@ export async function GET(request) {
       display: 'flex', 
       flexDirection: 'column',
       flex: '1',
+      background: '#f6f6f6',
+      height: '100%'
     }}
     >
         {header}
