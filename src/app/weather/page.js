@@ -186,7 +186,7 @@ export async function generateMetadata(req) {
 		title: `Weather for ${weatherLocation} | URBANE`, 
 		description: 'Welcome to Urbane Weather',
         openGraph: {
-            title: `Current weather conditions for ${weatherLocation} | Urbane`,
+            title: `Current Weather Conditions for ${weatherLocation} | Urbane`,
             description: `The current temperature and weather. Detailed forecast from the NWS.`,
             images: [{
                 url: `${host}/weather/og?lat=${params.lat}&lon=${params.lon}&units=${params.units}&city=${params.city}&offset=${params.offset}&zone=${params.zone}`,

@@ -504,11 +504,12 @@
     border-radius: 0;
     font-weight: 500;
     height: 40px;
+    color: var(--accent-text);
     font-family: inherit;
 }
 
 .explain-graphs-wrap {
-
+    display: grid;
 }
 
 
@@ -725,5 +726,17 @@
     .weather-updates {
         grid-auto-flow: row;
         row-gap: 5px;
+    }
+    .explain-close {
+        margin: 20px 0 0 0;
+        width: auto;
+    }
+    .explain-label {
+        font-size: 35px;
+    }
+    .explain-content {
+        max-width: unset;
+        width: auto;
+        font-size: 14px;
     }
 }

@@ -372,7 +372,7 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
                 color: '#1B1B1B',
                 margin: '50px 70px 20px'
             }}
-            >{detailedForecast.substring(0, 165)}</span>
+            >{detailedForecast.substring(0, 163) + '...'}</span>
         )
     }
 
