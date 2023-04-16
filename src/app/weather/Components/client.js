@@ -2,11 +2,12 @@
 
 import { nanoid } from 'nanoid'
 import { createRef, useRef, useEffect, useState } from 'react';
+import { analyze384hourArray, getWeatherDescription } from '@/app/utils/explain';
+
 
 const dayjs = require('dayjs');
 const duration = require('dayjs/plugin/duration');
 dayjs.extend(duration);
-
 
 export const ReadableDate = () => {
 	return dayjs().format('dddd MMMM D')
@@ -51,7 +52,6 @@ export const Countdown = ({lastReqTime}) => {
 		let timeUntilNextSecond = 1000 - now.getMilliseconds();
 		setTimeout(updateCountdown, timeUntilNextSecond);
 	})
-
 
 	return (<span>{countdownText}</span>)
 }
@@ -219,12 +219,8 @@ export const TilesGrid = (props) => {
         ev.preventDefault();
     }
 
-	function dragEnter (ev) {
-	}
-
-	function dragExit (ev) {
-		//console.log(ev.target)
-	}
+	function dragEnter (ev) {}
+	function dragExit (ev) {}
       
     function drag(ev) {
 		let pinnedContainer = document.querySelector(`.${styles['pinned']}`).children[1];
@@ -293,8 +289,6 @@ export const TilesGrid = (props) => {
 			}
 		});
 
-
-
 		console.log({allTilelabels, pinnedTileLabels})
     }
 
@@ -330,11 +324,91 @@ export const TilesGrid = (props) => {
 		}, [tileLabels])
 	}
 
+	let currentTimeout = 'hidden';
+
+	const hideExplain = (e) => {
+		const explainElement = document.querySelector(`.${styles['tile-explain']}`);
+		explainElement.parentElement.classList.remove(styles['explain-state']);
+
+		currentTimeout = setTimeout(() => {
+			explainElement.parentElement.classList.add(styles['hide']);
+			currentTimeout = 'hidden'
+		}, 300)
+	}
+
+	const tileClickHandler = (e) => {
+		const tile = e.currentTarget;
+		const explainElement = document.querySelector(`.${styles['tile-explain']}`);
+
+		const description = getWeatherDescription(tile.dataset.label);
+
+		const titleElement = explainElement.querySelector(`.${styles['explain-label']}`);
+
+		const descriptionElement = explainElement.querySelector(`.${styles['explain-content']}`);
+
+		const texts = analyze384hourArray(JSON.parse(tile.dataset.weather), tile.dataset.label, {})
+		
+		const analysisWrap = explainElement.querySelector(`.${styles['explain-analysis-wrap']}`)
+		analysisWrap.innerHTML = '';
+
+		texts.forEach(stat => {
+			const statItem = Object.assign(document.createElement('div'), {
+				innerHTML: stat,
+				className: styles['explain-analysis-text']
+			});
+
+			analysisWrap.appendChild(statItem);
+		})
+
+		explainElement.querySelector('.explain-close-btn').onclick = () => {
+			hideExplain();
+			explainElement.classList.remove(styles['show']);
+
+			explainElement.querySelector('.explain-close-btn').onclick = null;
+		};
+
+		console.log({currentTimeout})
+		explainElement.parentElement.classList.remove(styles['hide']);
+
+		let waitDuration = 100;
+
+		if (currentTimeout == 'stay') {
+			explainElement.classList.add(styles['change']);
+
+			setTimeout(() => {
+				titleElement.innerHTML = tile.dataset.label;
+				descriptionElement.innerHTML = description;
+
+				setTimeout(() => {
+					explainElement.classList.remove(styles['change']);
+				})
+			}, 200);
+			
+			waitDuration = 300;
+
+		} else {
+			if (typeof currentTimeout === 'number') {
+				clearTimeout(currentTimeout);
+			}
+			titleElement.innerHTML = tile.dataset.label;
+			descriptionElement.innerHTML = description;
+
+			currentTimeout = 'stay';
+		} 
+
+		setTimeout(() => {
+			explainElement.parentElement.classList.add(styles['explain-state'])
+			explainElement.classList.add(styles['show']);
+		}, waitDuration)
+	}
+
 	useEffect(() => {
 		console.log('adding listeners to', props.prefix)
 		Array.from(gridRef.current.children).forEach(tile => {
 			tile.addEventListener('dragstart', drag)
 			tile.addEventListener('dragend', dragEnd)
+
+			tile.addEventListener('click', tileClickHandler)
 		});
 	}, [])
 
@@ -392,6 +466,7 @@ export const TilesWrapper = (props) => {
 
 				prefix={'pinned'} 
 				styles={styles} 
+				timeIndex={props.timeIndex}
 				>
 				
 				</TilesGrid>
@@ -407,6 +482,7 @@ export const TilesWrapper = (props) => {
 
 				prefix={'all'} 
 				styles={styles} 
+				timeIndex={props.timeIndex}
 				>
 					{props.children}
 				</TilesGrid>
@@ -435,6 +511,7 @@ ChartJS.register(
 	Tooltip,
 	Filler
 );
+
 
 const createLabels = (length, step, start) => {
 	let labelsArray = [];
@@ -645,7 +722,7 @@ export const ChartElement = (props) => {
 			return console.log('already');
 		}
 
-		document.querySelector(`.${styles['active']}`).classList.remove(styles['active'])
+		document.querySelector(`.${styles['analyze-tab']}.${styles['active']}`).classList.remove(styles['active'])
 		this.classList.add(styles['active'])
 
 		setActiveWeatherLabels([labelClicked])
@@ -788,6 +865,15 @@ export const ChartElement = (props) => {
 					interaction: {
 						mode: 'index',
 						intersect: false,
+					},
+					animation: {
+						duration: 0,
+					},
+					hover: {
+						animationDuration: 0,
+					},
+					responsive: {
+						 
 					},
 					elements: {
 						point: {
@@ -957,7 +1043,6 @@ export const Radar = (props) => {
 			const tilesEndpoint = `https://tilecache.rainviewer.com${endpoints.radar.nowcast[0].path}/256/{z}/{x}/{y}/4/1_1.png`;
 
 			Map.on('load', (e) => {
-				console.log(e, tilesEndpoint)
 				Map.addSource('raster-tiles', {
 					'type': 'raster',
 					'tiles': [

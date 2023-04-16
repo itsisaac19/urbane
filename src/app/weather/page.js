@@ -11,8 +11,6 @@ const dayjs = require('dayjs');
 
 export default async function Home({ searchParams }) {
     const cookieStore = cookies();
-    const cookieCoordinates = cookieStore.get('coordinates');
-    console.log('coords found in cookie:', {cookieCoordinates})
 
     console.log({searchParams})
 
@@ -21,8 +19,8 @@ export default async function Home({ searchParams }) {
     }
 
     const coordinates = [searchParams.lat, searchParams.lon];
-    const city = 'Shoreview';
-    const units = 'imperial';
+    const city = searchParams.city;
+    const units = searchParams.units;
 
 	const lastReqTime = dayjs().toISOString();
 
@@ -112,7 +110,17 @@ export default async function Home({ searchParams }) {
 							styles={styles}
 						/>
 					</Suspense>
-
+                    <div className={`${styles['tile-explain-wrapper']} ${styles['hide']}`}>
+                        <div className={`${styles['tile-explain']}`}>
+                            <span className={`${styles['explain-overline']}`}>INFORMATION</span>
+                            <span className={`${styles['explain-label']}`}>Surface Pressure</span>
+                            <span className={`${styles['explain-content']}`}>blah blah</span>
+                            <div className={`${styles['explain-graphs-wrap']} explain-graphs-wrap`}>
+                                <div className={`${styles['explain-analysis-text']}`}>{`There will be low until , and then will spike in  hours.`}</div>
+                            </div>
+                            <button className={`${styles['explain-close']} explain-close-btn`}>close</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className={`${styles['grid-card']} ${styles['analyze']}`}>

@@ -1,9 +1,27 @@
-import { nanoid } from 'nanoid'
-
 import React from "react";
-import dayjs from 'dayjs';
 
-import { TilesWrapper } from './client';
+import dayjs from 'dayjs';
+import { nanoid } from 'nanoid';
+import { TilesWrapper, ChartElement } from './client';
+
+export const OpenMeteoData = async (customParamString='', props={
+    startDate: '',
+    endDate: '',
+    latitude: 0,
+    longitude: 0,
+    units: ''
+}) => {
+    const startAndEnd = `&start_date=${props.startDate}&end_date=${props.endDate}`;
+    
+    let unitString = '';
+    if (props.units == 'imperial') {
+        unitString = `&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch`
+    }
+    
+    const openMeteoRequest = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`, { cache: 'no-store' });
+
+    return openMeteoRequest.json();
+}
 
 export const GreetingText = () => {
     const hours = new Date().getHours();
@@ -143,12 +161,12 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
                 {
                     maxWidth: '1100px',
                     color: '#1B1B1B',
-                    fontWeight:"400",
+                    fontWeight: 700,
                     fontSize: "95px", 
                     textTransform: "none", 
-                    letterSpacing: '-0.03em',
-                    lineHeight: "95px",
-                    padding: "50px"
+                    letterSpacing: '-0.05em',
+                    lineHeight: "90px",
+                    padding: "70px 0px 30px 70px"
                 }
             }>It's {currentTemp}{units == 'metric' ? '°C' : '°F'} and {currentWeather} in {city}.</span> 
         )  
@@ -174,25 +192,6 @@ const degreesTo16Wind = (degrees, readable) => {
     const degreeStep = 22.5;
     const index = Math.floor((degrees + degreeStep / 2) / degreeStep) % 16;
     return cardinalDirections[index];
-}
-
-export const OpenMeteoData = async (customParamString='', props={
-    startDate: '',
-    endDate: '',
-    latitude: 0,
-    longitude: 0,
-    units: ''
-}) => {
-    const startAndEnd = `&start_date=${props.startDate}&end_date=${props.endDate}`;
-    
-    let unitString = '';
-    if (props.units == 'imperial') {
-        unitString = `&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch`
-    }
-    
-    const openMeteoRequest = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`, { cache: 'no-store' });
-
-    return openMeteoRequest.json();
 }
 
 const betterLabels = {
@@ -241,8 +240,7 @@ const betterLabels = {
 export const WeatherTiles = async ({latitude, longitude, city, units='metric', precision=true, styles}) => {
 
     const startDate = dayjs().format('YYYY-MM-DD');
-    const endDate = startDate;
-
+    const endDate = dayjs().add(15, 'days').format('YYYY-MM-DD');
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
         startDate,
@@ -258,9 +256,9 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
     const [dailyWeather, dailyUnits] = [openMeteoData.daily, openMeteoData.daily_units];
 
 
-    const generateTile = (label, value) => {
+    const generateTile = (label, value, dataArray) => {
         return (
-            <div id={nanoid()} data-label={label} draggable="true" className={`${styles['tile-item']} ${styles['']}`}>
+            <div id={nanoid()} data-label={label} data-weather={JSON.stringify(dataArray)} draggable="true" className={`${styles['tile-item']} ${styles['']}`}>
                 <span className={`${styles['tile-value']}`}>{value}</span>
                 <span className={`${styles['tile-label']}`}>{label}</span>
             </div>
@@ -300,11 +298,9 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
 
         const data = hourlyAndDailyWeather[weatherVariable];
         let displayLabel = betterLabels[weatherVariable];
-
-
         let displayValue = data[0];
 
-        if (data.length > 1) { // hourly
+        if (data.length > 16) { // hourly
             displayValue = data[timeIndex];
         }
 
@@ -313,7 +309,6 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
                 displayValue = Math.round(displayValue)
             }
         }
-
 
         const FadedTextSpan = (text) => {
             return (
@@ -338,32 +333,21 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
             unit = cleanUnit(unit);
         }
 
-
         displayValue = (
             <>
             {`${displayValue}${unit}`}
             {fadedText ? FadedTextSpan(fadedText) : null}
             </>
         );
-
-        //console.log(displayValue);
-
-        allTilesChildren.push(generateTile(displayLabel, displayValue))
+        allTilesChildren.push(generateTile(displayLabel, displayValue, data))
     }
 
 
 
     return (
-        <TilesWrapper styles={styles}>{allTilesChildren}</TilesWrapper>
+        <TilesWrapper timeIndex={timeIndex} styles={styles}>{allTilesChildren}</TilesWrapper>
     )
 }
-
-const prioritizeNumberInformation = (str) => {
-    return str.replace(/\d+/g, (number) => {
-        return `<u>${number}</u>`;
-    });
-}
-
 
 export const DetailedWeather = async ({latitude, longitude, og}) => {
     const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`, { cache: 'no-store' });
@@ -376,42 +360,6 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
 
     if (!nwsForecastData?.properties) console.log(nwsForecastData);
     const detailedForecast = nwsForecastData.properties.periods[0].detailedForecast;
-    const priorityString = prioritizeNumberInformation(detailedForecast)
-
-/*     const windSpeed = [5, 6, 7, 8, 9, 10];
-    const temperature = [66, 65, 65, 67, 68, 68];
-    const humidity = [60, 61, 62, 63, 64, 65];
-    const rainChance = [0, 0, 0, 100, 100, 0];
-
-    const willOrWillBe = windSpeed[0] === 0 ? "will be" : "will";
-
-    // Check if maximum rain chance is above 50%
-    const maxRainChance = Math.max(...rainChance);
-    const hasRain = maxRainChance > 50;
-
-    const windSum = windSpeed.reduce((a, b) => a + b, 0)
-    const windAvg = windSum / windSpeed.length;
-
-    // Construct weather statement
-    let weatherStatement = `Wind around ${Math.round(windAvg)} mph, with a high near ${Math.max(...temperature)}.`;
-
-    if (hasRain) {
-    // Determine the index of the start and end of the rain period
-    const rainStart = dayjs().add(rainChance.indexOf(maxRainChance), 'hours').format('h:00a');
-    const rainEnd = dayjs().add(rainChance.lastIndexOf(maxRainChance), 'hours').format('h:00a');
-
-    // Calculate the duration of the rain period
-    const rainDuration = rainChance.lastIndexOf(maxRainChance) - rainChance.indexOf(maxRainChance) + 1;
-
-    // Add rain information to weather statement
-    weatherStatement += ` ${maxRainChance}% chance of rain for ${rainDuration} hours, starting at ${rainStart}.`;
-    } else {
-    // Add dry weather information to weather statement
-    const dailyRainChance = 0;
-    weatherStatement += ` Chance of precipitation is ${dailyRainChance}%.`;
-    }
-
-    console.log({weatherStatement}); */
 
     if (og === true) {
         return (
@@ -420,11 +368,11 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
                 maxWidth: '1050px',
                 height: '200px',
                 overflow: 'hidden',
-                fontSize: '40px',
+                fontSize: '39px',
                 color: '#1B1B1B',
-                margin: '10px 50px 0'
+                margin: '50px 70px 20px'
             }}
-            >{detailedForecast}</span>
+            >{detailedForecast.substring(0, 165)}</span>
         )
     }
 
@@ -432,7 +380,6 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
 }
 
 
-import { ChartElement } from './client';
 
 export const Chart = async ({latitude, longitude, city, units='metric', styles}) => {
     const startDate = dayjs().format('YYYY-MM-DD');

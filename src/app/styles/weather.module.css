@@ -391,6 +391,126 @@
 }
 
 
+.tile-explain-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0vw;
+    right: 0vw;
+
+    translate: 0 0%;
+    opacity: 0;
+
+    backdrop-filter: blur(0px);
+    display: grid;
+
+    z-index: 10;
+    transition: translate 1s cubic-bezier(.05,.88,.74,1.05), opacity 0.2s ease-out;
+}
+.tile-explain-wrapper.hide {
+    display: none;
+}
+.tile-explain-wrapper.explain-state {
+    transition: translate 0.5s cubic-bezier(.05,.88,.74,1.05), opacity 0.2s ease-out;
+    translate: 0 0%;
+    opacity: 1;
+}
+.tile-explain {
+    background: var(--primary-tile);
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content min-content;
+    row-gap: 10px;
+    padding: 25px 30px 30px 30px;
+    margin: 10px;
+
+    opacity: 0;
+
+    height: max-content;
+    transition: opacity 0.2s ease;
+}
+
+.tile-explain.show {
+    opacity: 1;
+}
+
+.tile-explain.change {
+    opacity: 0;
+}
+
+.explain-overline {
+    font-size: 14px;
+    letter-spacing: 0.19em;
+    transition: 0.3s ease;
+    transition-delay: 0.2s;
+
+    opacity: 0;
+}
+.show > .explain-overline {
+    opacity: 1;
+}
+.change > .explain-overline {
+    transition-delay: 0s;
+    transition: 0.2s linear;
+    opacity: 0;
+}
+.explain-label {
+    font-size: 40px;
+    letter-spacing: -0.03em;
+    color: var(--accent-text);
+
+    transition: 0.3s ease;
+    transition-delay: 0.25s;
+
+    opacity: 0;
+}
+.show > .explain-label {
+    opacity: 1;
+}
+.change > .explain-label {
+    transition-delay: 0s;
+    transition: 0.2s linear;
+    opacity: 0;
+}
+.explain-content {
+    margin: 10px 30px 0 0;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5em;
+    width: 50vw;
+    max-width: 600px;
+    color: var(--accent-text);
+    white-space: pre-line;
+
+    transition: 0.3s ease;
+    transition-delay: 0.27s;
+
+    opacity: 0;
+}
+.show > .explain-content {
+    opacity: 1;
+}
+.change > .explain-content {
+    transition-delay: 0s;
+    transition: 0.2s linear;
+    opacity: 0;
+}
+.explain-close {
+    cursor: pointer;
+    margin: 20px 0 0 auto;
+    width: 100px;
+    background: var(--secondary-tile);
+    border: none;
+    border-radius: 0;
+    font-weight: 500;
+    height: 40px;
+    font-family: inherit;
+}
+
+.explain-graphs-wrap {
+
+}
+
 
 .all .tile-item {
     background: var(--secondary-tile);

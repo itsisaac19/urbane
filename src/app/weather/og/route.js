@@ -8,7 +8,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.extend(advancedFormat)
 
-const dating = (timeZoneOffset=0, timeZoneName='') => {
+const dating = (timeZoneOffset=0, timeZoneName='', coordinates=[]) => {
   let offsetDirection = parseInt(timeZoneOffset) > 0 ? '+' : '-';
 
   const tzDate = new Date().toLocaleString('en-US', 'UTC');
@@ -19,11 +19,12 @@ const dating = (timeZoneOffset=0, timeZoneName='') => {
   <div
     style={{
       display: 'flex',
-      padding: '0px 50px 50px 50px',
+      padding: '0px 70px 70px 70px',
       marginTop: 'auto',
-      fontSize: '20px',
+      fontSize: '25px',
+      fontWeight: 700,
       textTransform: 'uppercase',
-      letterSpacing: '0.05em'
+      letterSpacing: '0.0em'
     }}
   >
   <span
@@ -48,9 +49,20 @@ export const contentType = 'image/png';
 export const alt = `The current temperature and weather. Detailed forecast from the NWS.`;
 
 // Make sure the font exists in the specified path:
-const font = fetch(new URL('../../../../assets/manrope-latin-400-normal.ttf', import.meta.url)).then(
-  (res) => res.arrayBuffer(),
-);
+const font = async () => {
+  const manrope400Req = fetch(new URL('../../../../assets/manrope-latin-400-normal.ttf', import.meta.url));
+  const manrope700Req = fetch(new URL('../../../../assets/manrope-latin-700-normal.ttf', import.meta.url));
+
+  const [manrope400Res, manrope700Res] = await Promise.all([manrope400Req, manrope700Req]);
+  
+  const manrope400ArrayBuffer = await manrope400Res.arrayBuffer();
+  const manrope700ArrayBuffer = await manrope700Res.arrayBuffer();
+
+  return {
+    manrope400ArrayBuffer,
+    manrope700ArrayBuffer
+  }
+}
 
 console.log(import.meta.url)
 
@@ -61,9 +73,9 @@ export async function GET(request) {
 
   console.log(params.offset)
 
-  const dateElement = dating(params.offset, params.zone)
+  const dateElement = dating(params.offset, params.zone, [params.lat, params.lon])
 
-  const manropeArrayBuffer = await font;
+  const {manrope400ArrayBuffer, manrope700ArrayBuffer} = await font();
 
   const header = await WeatherHeader({
     latitude: params.lat,
@@ -98,8 +110,14 @@ export async function GET(request) {
     fonts: [          
       {
         name: 'Manrope',
-        data: manropeArrayBuffer,
-        weight: 500,
+        data: manrope400ArrayBuffer,
+        weight: 400,
+        style: 'normal',
+      },
+      {
+        name: 'Manrope',
+        data: manrope700ArrayBuffer,
+        weight: 700,
         style: 'normal',
       }
     ]
