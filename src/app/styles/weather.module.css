@@ -48,6 +48,7 @@
     height: 100%;
     border-right: 1px solid;
     padding: 33px 33px 0 62px;
+    position: relative;
 }
 .weather-header {
     font-weight: 400;
@@ -97,6 +98,52 @@
 .weather-updates .update-now-text {
     color: var(--accent-text);
     text-decoration: underline;
+}
+
+.share-link {
+    cursor: pointer;
+    position: absolute;
+    right: 38px;
+    bottom: 30px;
+    display: grid;
+    grid-auto-flow: column;
+
+    background: none;
+    border: 1px solid var(--gridline);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+.share-button {
+    cursor: pointer;
+    width: max-content;
+    height: auto;
+    padding: 10px 10px 10px 20px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 0;
+    background: none;
+    color: var(--secondary-text);
+    border: none;
+
+
+    transition: color 0.3s ease;
+}
+.share-link:hover .share-button {
+    color: var(--accent-text);
+
+}
+.share-link:hover {
+    background: var(--primary-tile);
+}
+.share-icon {
+    margin: auto 15px auto 0;
+    width: 25px;
+    height: 25px;
+    fill: var(--secondary-text);
+}
+.share-link:hover .share-icon {
+    fill: var(--accent-text);
+
 }
 
 .grid-card.clock {
@@ -429,6 +476,11 @@
     height: max-content;
     transition: opacity 0.2s ease;
 }
+@media (prefers-color-scheme: light) {
+    .tile-explain {
+        border: 1px solid var(--gridline);
+    }
+}
 
 .tile-explain.show {
     opacity: 1;
@@ -515,6 +567,12 @@
 
 .all .tile-item {
     background: var(--secondary-tile);
+}
+@media (prefers-color-scheme: light) {
+    .all .tile-item {
+        background: unset;
+        border: 1px solid var(--gridline);
+    }
 }
 .all .tile-item:hover {
     background: var(--secondary-tile-hover);

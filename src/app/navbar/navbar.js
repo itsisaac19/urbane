@@ -1,31 +1,37 @@
-export const Navbar = () => {
+import Link from 'next/link';
+
+export const Navbar = (searchParams, label) => {
+    console.log({searchParams})
+
+    const navSearchParams = new URLSearchParams(searchParams).toString();
+
     return (
         <div className="navigation-grid">
             <div className="urbane">URBANE</div>
             <div className="tabs">
-                <span className="home tab active">
+                <Link href={`/weather?${navSearchParams}`} className={`home tab ${label == 'home' ? 'active' : null}`}>
                 HOME
-                </span>
-                <span className="houly tab">
+                </Link>
+{/*                 <span className="houly tab">
                 HOURLY
                 </span>
                 <span className="daily tab">
                 DAILY
-                </span>
-                <span className="radar tab">
+                </span> */}
+                <Link href={`/radar?${navSearchParams}`} className={`radar tab ${label == 'radar' ? 'active' : null}`}>
                 RADAR
-                </span>
-                <span className="warnings tab">
+                </Link>
+{/*                 <span className="warnings tab">
                 WARNINGS
-                </span>
+                </span> */}
             </div>
             <div className="help">
-                <span className="about tab">
+{/*                 <span className="about tab">
                 ABOUT
                 </span>
                 <span className="contact tab">
                 CONTACT
-                </span>
+                </span> */}
             </div>
         </div>
     )

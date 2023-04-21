@@ -134,6 +134,123 @@ const parseWeatherCode = (code) => {
     return weather;
 }
 
+const parseOpenWeatherMapCode = (code) => {
+    switch (code) {
+        case 200:
+          return "thunderstorms with light rain";
+        case 201:
+          return "thunderstorms with rain";
+        case 202:
+          return "thunderstorms with heavy rain";
+        case 210:
+          return "light thunderstorms";
+        case 211:
+          return "thunderstorms";
+        case 212:
+          return "heavy thunderstorms";
+        case 221:
+          return "ragged thunderstorms";
+        case 230:
+          return "thunderstorms with light drizzle";
+        case 231:
+          return "thunderstorms with drizzle";
+        case 232:
+          return "thunderstorms with heavy drizzle";
+        case 300:
+          return "light intensity drizzle";
+        case 301:
+          return "drizzle";
+        case 302:
+          return "heavy intensity drizzle";
+        case 310:
+          return "light intensity drizzle rain";
+        case 311:
+          return "drizzle rain";
+        case 312:
+          return "heavy intensity drizzle rain";
+        case 313:
+          return "shower rain and drizzle";
+        case 314:
+          return "heavy shower rain and drizzle";
+        case 321:
+          return "shower drizzle";
+        case 500:
+          return "light rain";
+        case 501:
+          return "moderate rain";
+        case 502:
+          return "heavy intensity rain";
+        case 503:
+          return "very heavy rain";
+        case 504:
+          return "extreme rain";
+        case 511:
+          return "freezing rain";
+        case 520:
+          return "light intensity shower rain";
+        case 521:
+          return "shower rain";
+        case 522:
+          return "heavy intensity shower rain";
+        case 531:
+          return "ragged shower rain";
+        case 600:
+          return "light snow";
+        case 601:
+          return "snow";
+        case 602:
+          return "heavy snow";
+        case 611:
+          return "sleet";
+        case 612:
+          return "light shower sleet";
+        case 613:
+          return "shower sleet";
+        case 615:
+          return "light rain and snow";
+        case 616:
+          return "rain and snow";
+        case 620:
+          return "light shower snow";
+        case 621:
+          return "shower snow";
+        case 622:
+          return "heavy shower snow";
+        case 701:
+          return "mist";
+        case 711:
+          return "smoke";
+        case 721:
+          return "haze";
+        case 731:
+          return "sand/dust whirls";
+        case 741:
+          return "fog";
+        case 751:
+          return "sand";
+        case 761:
+          return "dust";
+        case 762:
+          return "volcanic ash";
+        case 771:
+          return "squalls";
+        case 781:
+          return "tornado";
+        case 800:
+          return "clear skies";
+        case 801:
+          return "few clouds";
+        case 802:
+          return "scattered clouds";
+        case 803:
+          return "broken clouds";
+        case 804:
+          return "overcast clouds";
+        default:
+          return "unknown";
+      }
+}
+
 export const WeatherHeader = async ({latitude, longitude, city, units='metric', styles, og=false}) => {
     const startDate = dayjs().format('YYYY-MM-DD');
     const endDate = startDate;
@@ -148,12 +265,16 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
         units
     })
 
+    const openWeatherMapReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=226665da3951803c74770f482ea4c65b`)
+    const openWeatherMapData = await openWeatherMapReq.json();
+
     console.timeEnd('only current');
 
-    //console.log('open-meteo:', openMeteoData);
+    console.log('open-meteo:', openWeatherMapData.weather[0]);
 
     const currentTemp = Math.round(openMeteoData.current_weather.temperature);
     const currentWeather = parseWeatherCode(openMeteoData.current_weather.weathercode);
+    //const currentWeather = parseOpenWeatherMapCode(openWeatherMapData.weather[0].id);
 
     if (og === true) {
         return (
@@ -162,7 +283,7 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
                     maxWidth: '1100px',
                     color: '#1B1B1B',
                     fontWeight: 700,
-                    fontSize: "95px", 
+                    fontSize: "85px", 
                     textTransform: "none", 
                     letterSpacing: '-0.05em',
                     lineHeight: "90px",

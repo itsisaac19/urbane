@@ -72,6 +72,8 @@ export const ClockTiles = ({styles}) => {
 		clockRef.current.classList.remove(styles.wait);
 
         const runEverySecond = () => {
+			if (!h1Grid.current) return;
+
             let [h1, h2] = dayjs().format('HH').split('');
 
             let [m1, m2] = dayjs().format('mm').split('');
@@ -89,6 +91,7 @@ export const ClockTiles = ({styles}) => {
             s2Grid.current.setAttribute('tempval', s2);
 
             [h1Grid, h2Grid, m1Grid, m2Grid, s1Grid, s2Grid].forEach(gridRef => {
+				if (!gridRef) return;
 
                 let tempVal = gridRef.current.getAttribute('tempval');
 
@@ -102,7 +105,8 @@ export const ClockTiles = ({styles}) => {
                     gridRef.current.style.translate = `0px -${(gridRows - 1) * 87}px`;
 
                     setTimeout(() => {
-                        gridRef.current.style.transition = `none`;
+						if (!gridRef) return;
+						gridRef.current.style.transition = `none`;
                         gridRef.current.style.translate = `0px 0px`;
     
                         setTimeout(() => {
@@ -739,28 +743,45 @@ export const ChartElement = (props) => {
 		let max = Math.max(...weatherDatasets[activeWeatherLabels[0]].data);
 		let min = Math.min(...weatherDatasets[activeWeatherLabels[0]].data)
 
-		if (activeWeatherLabels.includes('Measured Temperature')) {
-
-			if (max >= 80) {
-				setChartMax(100)
-			} else {
-				setChartMax(Math.round(max) + 20)
-			}
-
-			if (Math.round(min) >= 10) {
-				setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
-			} else {
+		switch (activeWeatherLabels[0]) {
+			case 'Measured Temperature':
+				if (max >= 80) {
+					setChartMax(100)
+				} else {
+					setChartMax(Math.round(max) + 20)
+				}
+	
+				if (Math.round(min) >= 10) {
+					setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
+				} else {
+					setChartMin(0)
+				}
+				break;
+			case 'Precipitation':
+			case 'Rain':
 				setChartMin(0)
-			}
-		} else {
-			setChartMax(max + 20);
+				let precipMax = Math.floor(max) + 0.5;
+				setChartMax(precipMax);
 
-			if (Math.round(min) >= 10) {
-				setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
-			} else {
-				setChartMin(0)
-			}
+				break;
+			case 'Visibility':
+				let visibilityMax = Math.ceil(max) + 10000;
+				console.log({visibilityMax})
+				setChartMax(visibilityMax);
+
+				break;
+			default:
+				setChartMax(max + 20);
+
+				if (Math.round(min) >= 10) {
+					setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
+				} else {
+					setChartMin(0)
+				}
+				break;
 		}
+
+		
 	}, [activeWeatherLabels])
 
 	useEffect(() => {
@@ -904,7 +925,6 @@ export const ChartElement = (props) => {
 							max: chartMax,
 							position: 'right',
 							ticks: {
-								stepSize: 5,
 								callback: function(val, index) {
 									// Hide every 2nd tick label
 									return index % 2 === 0 ? this.getLabelForValue(val) : '';
@@ -1035,9 +1055,11 @@ export const Radar = (props) => {
 			const radarElement = radarElementRef.current;
 			const Map = new mapboxInstance.Map({
 				container: radarElement.id,
-				style: "mapbox://styles/mapbox/dark-v11",
+				style: "mapbox://styles/mapbox/dark-v10",
 				center: [longitude, latitude], // starting position
-				zoom: 4 // starting zoom
+				minZoom: 4,
+				zoom: 4, // starting zoom
+				maxZoom: 6,
 			})
 
 			const tilesEndpoint = `https://tilecache.rainviewer.com${endpoints.radar.nowcast[0].path}/256/{z}/{x}/{y}/4/1_1.png`;
@@ -1068,4 +1090,30 @@ export const Radar = (props) => {
 
 
     return (<div id={'home-radar'} ref={radarElementRef}></div>);
+}
+
+
+export const ShareButton = (props) => {
+	const {styles} = props
+	const buttonRef = createRef();
+
+	useEffect(() => {
+		buttonRef.current.onclick = async (e) => {
+			const URL = window.location.href;
+
+			try {
+				await navigator.clipboard.writeText(URL);
+				alert(`Copied shareable link to clipboard!`)
+				console.log('Content copied to clipboard');
+			} catch (err) {
+				console.error('Failed to copy: ', err);
+			}
+		}
+	}, [])
+
+	return (
+	<button ref={buttonRef} className={`${styles['share-button']}`}>
+		Share this weather
+	</button>
+	)
 }

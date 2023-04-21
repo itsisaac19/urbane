@@ -1,10 +1,11 @@
 import styles from '../styles/weather.module.css';
 
 import { WeatherHeader, DetailedWeather, WeatherTiles, Chart } from './Components/server';
-import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar } from './Components/client';
+import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton } from './Components/client';
 import { Navbar } from "@/app/navbar/navbar";
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 const dayjs = require('dayjs');
@@ -13,9 +14,10 @@ export default async function Home({ searchParams }) {
     const cookieStore = cookies();
 
     console.log({searchParams})
+    const navSearchParams = new URLSearchParams(searchParams).toString();
 
     if (!(searchParams.lat && searchParams.lon && searchParams.units && searchParams.city && searchParams.offset)) {
-        redirect('/');
+        //redirect('/');
     }
 
     const coordinates = [searchParams.lat, searchParams.lon];
@@ -26,7 +28,7 @@ export default async function Home({ searchParams }) {
 
   return (
     <div className={styles['master-wrap']}>
-        {Navbar()}
+        {Navbar(searchParams, 'home')}
         <div className={styles['master-grid']}>
             <div className={`${styles['sub-grid-1']} ${styles['temp-fixed']}`}>
                 <div className={`${styles['grid-card']} ${styles['header']}`}>
@@ -65,6 +67,11 @@ export default async function Home({ searchParams }) {
                         </span> 
                         <span className={`${styles['update-now-text']}`}>Update now</span> 
                     </div>
+
+                    <div className={`${styles['share-link']}`}>
+                        <ShareButton styles={styles}></ShareButton>
+                        <svg className={`${styles['share-icon']}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" ><path d="M30.3 13.7L25 8.4l-5.3 5.3-1.4-1.4L25 5.6l6.7 6.7z"/><path d="M24 7h2v21h-2z"/><path d="M35 40H15c-1.7 0-3-1.3-3-3V19c0-1.7 1.3-3 3-3h7v2h-7c-.6 0-1 .4-1 1v18c0 .6.4 1 1 1h20c.6 0 1-.4 1-1V19c0-.6-.4-1-1-1h-7v-2h7c1.7 0 3 1.3 3 3v18c0 1.7-1.3 3-3 3z"/></svg>
+                    </div>
                 </div>
 
                 <div className={`${styles['grid-card']} ${styles['clock']}`}>
@@ -78,9 +85,9 @@ export default async function Home({ searchParams }) {
 
                 <div className={`${styles['grid-card']} ${styles['mini-radar']}`}>
                     <div className={`${styles['banner']}`}>
-                        <span className={`${styles['banner-text']} ${styles['time-sens']}`}>TIME SENSITIVE</span> 
+                        <span className={`${styles['banner-text']} ${styles['time-sens']}`}>CURRENT RAIN RADAR</span> 
                         <span></span>
-                        <span className={`${styles['banner-text']} ${styles['go-to']}`}>GO TO RADAR →</span> 
+                        <Link href={`/radar?${navSearchParams}`} className={`${styles['banner-text']} ${styles['go-to']}`}>GO TO RADAR →</Link> 
                     </div>
                     <div className={`${styles['radar-wrap']}`}>
                         <Suspense fallback={<div>Loading radar ...</div>}>
