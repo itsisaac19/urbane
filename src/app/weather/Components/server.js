@@ -255,8 +255,6 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
     const startDate = dayjs().format('YYYY-MM-DD');
     const endDate = startDate;
 
-    console.time('only current')
-
     const openMeteoData = await OpenMeteoData('&current_weather=true', {
         startDate,
         endDate,
@@ -265,12 +263,9 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
         units
     })
 
-    const openWeatherMapReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=226665da3951803c74770f482ea4c65b`)
-    const openWeatherMapData = await openWeatherMapReq.json();
+/*     const openWeatherMapReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=226665da3951803c74770f482ea4c65b`)
+    const openWeatherMapData = await openWeatherMapReq.json(); */
 
-    console.timeEnd('only current');
-
-    console.log('open-meteo:', openWeatherMapData.weather[0]);
 
     const currentTemp = Math.round(openMeteoData.current_weather.temperature);
     const currentWeather = parseWeatherCode(openMeteoData.current_weather.weathercode);
@@ -371,8 +366,6 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
         units
     })
 
-    console.log('hourly 0 day')
-
     const [hourlyWeather, hourlyUnits] = [openMeteoData.hourly, openMeteoData.hourly_units];
     const [dailyWeather, dailyUnits] = [openMeteoData.daily, openMeteoData.daily_units];
 
@@ -470,16 +463,40 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
     )
 }
 
+const retryNWS = async ({latitude, longitude}) => {
+  const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`, { cache: 'no-store' });
+  const nwsData = await nwsRequest.json();
+
+  return nwsData;
+}
+
 export const DetailedWeather = async ({latitude, longitude, og}) => {
     const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`, { cache: 'no-store' });
     const nwsData = await nwsRequest.json();
   
     const nwsForecastRequest = await fetch(nwsData.properties.forecast, { cache: 'no-cache' });
-    const nwsForecastData = await nwsForecastRequest.json();
+    const nwsForecastData = await new Promise(async resolve => {
+      let initial = await nwsForecastRequest.json();
+      if (!initial?.properties) {
+        let second = await retryNWS({latitude, longitude});
+
+        if (!second?.properties) {
+          let third = await retryNWS({latitude, longitude});
+          resolve(third);
+        } else {
+          resolve(second);
+        }
+
+      } else {
+        resolve(initial);
+      }
+    })
   
     //console.log('got it', nwsForecastData.properties.periods[0].detailedForecast);
 
-    if (!nwsForecastData?.properties) console.log(nwsForecastData);
+    if (!nwsForecastData?.properties) {
+      console.log(nwsForecastData)
+    };
     const detailedForecast = nwsForecastData.properties.periods[0].detailedForecast;
 
     if (og === true) {
@@ -504,7 +521,9 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
 
 export const Chart = async ({latitude, longitude, city, units='metric', styles}) => {
     const startDate = dayjs().format('YYYY-MM-DD');
-    const endDate = startDate;
+    
+    // Maximum 7-day timeframe
+    const endDate = dayjs().add(6, 'days').format('YYYY-MM-DD');
 
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
