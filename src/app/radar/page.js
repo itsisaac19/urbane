@@ -3,8 +3,8 @@
 import styles from '../styles/radar.module.css';
 
 import { Navbar } from "@/app/navbar/navbar";
-import { Suspense } from 'react';
-import { redirect } from 'next/navigation';
+import { manrope } from "../utils/fonts";
+
 
 import { CurrentTimer, Radar } from './Components/client';
 
@@ -25,7 +25,7 @@ export default async function Home({ searchParams }) {
 	const lastReqTime = dayjs().toISOString();
 
   return (
-    <div className={styles['master-wrap']}>
+    <div className={`${styles['master-wrap']} ${manrope.className} __className_6e4617`}>
         {Navbar(searchParams, 'radar')}
         <div className={styles['master-grid']}>
             <div className={`${styles['sub-grid-1']} `}>
@@ -136,10 +136,10 @@ export async function generateMetadata(req) {
 		title: `Weather for ${weatherLocation} | URBANE`, 
 		description: 'Welcome to Urbane Weather',
         openGraph: {
-            title: `Current Weather Conditions for ${weatherLocation} | Urbane`,
-            description: `The current temperature and weather. Detailed forecast from the NWS.`,
+            title: `Weather Radar for ${weatherLocation} | Urbane`,
+            description: `The weather radar`,
             images: [{
-                url: `${host}/weather/og?lat=${params.lat}&lon=${params.lon}&units=${params.units}&city=${params.city}&offset=${params.offset}&zone=${params.zone}`,
+                url: `${host}/radar/og?lat=${params.lat}&lon=${params.lon}&units=${params.units}&city=${params.city}&offset=${params.offset}&zone=${params.zone}`,
                 width: 1200,
                 height: 630,
             }]

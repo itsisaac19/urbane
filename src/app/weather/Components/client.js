@@ -91,7 +91,7 @@ export const ClockTiles = ({styles}) => {
             s2Grid.current.setAttribute('tempval', s2);
 
             [h1Grid, h2Grid, m1Grid, m2Grid, s1Grid, s2Grid].forEach(gridRef => {
-				if (!gridRef) return;
+				if (!gridRef?.current) return;
 
                 let tempVal = gridRef.current.getAttribute('tempval');
 
@@ -307,7 +307,7 @@ export const TilesGrid = (props) => {
 			} else if (isSubsequentRender.current) {
 				isSubsequentRender.current = false;
 
-				console.log('called from pinnedTiles', tileLabels)
+				//console.log('called from pinnedTiles', tileLabels)
 				tileLabels.pinned.forEach(tileLabel => {
 					let pinnedContainer = document.querySelector(`.${styles['pinned']} .${styles['tiles-grid']}`);
 					let tileToPin = gridRef.current.querySelector(`[data-label="${tileLabel}"]`);
@@ -516,19 +516,27 @@ ChartJS.register(
 	Filler
 );
 
-
-const createLabels = (length, step, start) => {
+/**
+ * @typedef {Object} LabelOptions
+ * @property {Number} length
+ * @property {'hour' | 'day'} step
+ * @property {Object} start
+ * 
+ * @param {LabelOptions} options 
+ * @returns 
+ */
+const createLabels = (options) => {
 	let labelsArray = [];
 
-	for(let i = 0; i < length; i++) {
-		let time = start.add(i, step);
+	for(let i = 0; i < options.length; i++) {
+		let time = options.start.add(i, options.step);
 		labelsArray.push(time.format('ha'))
 	}
 
 	return labelsArray;
 }
 
-const plugin = {
+const hoverLine = {
     id: 'verticalLiner',
     afterInit: (chart, args, opts) => {
       chart.verticalLiner = {}
@@ -558,6 +566,60 @@ const plugin = {
         
         ctx.restore();
     }
+}
+
+let limit = 5;
+let count = 0;
+
+const drawLine = (chart, text, x, y) => {
+	const {ctx} = chart;
+	const {top, bottom} = chart.chartArea
+	
+	ctx.save()
+	
+	const scale = chart.scales['y'];
+
+	let pos = scale.top + 30;
+	let strokeStyle = '#FFFFFF60';
+
+	if (text == 'Max' || text == 'Min') {
+		pos = y - 20;
+		strokeStyle = '#FFFFFF20'
+	}
+	
+	ctx.strokeStyle = strokeStyle;
+
+	ctx.beginPath();
+	ctx.moveTo(x, top);
+	ctx.lineTo(x, bottom);
+	ctx.stroke();
+
+	ctx.fillStyle = "#FFFFFF";
+	ctx.textAlign = 'center';
+
+	ctx.fillText(text, x, pos);
+	
+	ctx.restore();
+}
+
+let verticalLinesTimeout;
+
+const drawVerticalLine = {
+    id: 'drawVerticalLine',
+	afterDraw: function (chart, args, options) {
+		if (verticalLinesTimeout) {
+			clearTimeout(verticalLinesTimeout);
+		}
+		verticalLinesTimeout = setTimeout(() => {
+			for (let line in options) {
+				let pointIndex = options[line].index;
+	
+				const x = chart.getDatasetMeta(0).data[pointIndex].x;
+				const y = chart.getDatasetMeta(0).data[pointIndex].y;
+				drawLine(chart, options[line].text, x, y)
+			}
+		}, 1)
+	}
 }
 
 const getOrCreateTooltip = (chart) => {
@@ -652,6 +714,7 @@ const getOrCreateTooltip = (chart) => {
 
 import { ScrollContainer } from 'react-indiana-drag-scroll'
 import 'react-indiana-drag-scroll/dist/style.css';
+import { Dayjs } from 'dayjs';
 
 export const ChartTabs = (props) => {
 	const { styles } = props;
@@ -696,30 +759,105 @@ export const ChartTabs = (props) => {
 	);
 }
 
+/**
+ * @typedef {Object} WeatherDataset
+ * @property {String} label
+ * @property {Array<Number> | Array<String>} data
+ * @property {Number} borderWidth
+ * @property {Number} tension
+ * 
+ * @param {WeatherDataset} dataset 
+ * @param {Number} endHourIndex 
+ */
+const sliceChartData = (dataset, endHourIndex=24) => {
+	const datasetClone = structuredClone(dataset);
+	const slicedData = datasetClone.data.slice(0, endHourIndex);
+
+	datasetClone.data = slicedData;
+
+	return {
+		labels: createLabels({
+			length: slicedData.length,
+			step: 'hour',
+			start: dayjs().startOf('day')
+		}),
+		datasets: [datasetClone]
+	}
+}
+
 export const ChartElement = (props) => {
 	const {weatherDatasets, styles} = props;
     const parentRef = createRef();
     const chartRef = createRef();
 	const isFirstRender = useRef(true); 
 
-	//console.log(weatherDatasets)
+	//console.log({weatherDatasets})
 
 	const [activeWeatherLabels, setActiveWeatherLabels] = useState(['Measured Temperature'])
 
-
-
-    const [chartData, setChartData] = useState({
-        labels: createLabels(weatherDatasets['Measured Temperature'].data.length, 'hour', dayjs().startOf('day')),
-        datasets: [weatherDatasets['Measured Temperature']]
-	});
+    const [chartData, setChartData] = useState(sliceChartData(weatherDatasets['Measured Temperature'], 24));
 
 	const [gridLineColor, setGridLineColor] = useState('');
 
-	const [chartMin, setChartMin] = useState();
-	const [chartMax, setChartMax] = useState();
+	/**
+	 * 
+	 * @param {String} label Weather label
+	 * @returns {{min: number, max: number}} Minimum and maximum scale values.
+	 */
+	const getMinMax = (label) => {
+		let max = Math.max(...weatherDatasets[label].data);
+		let min = Math.min(...weatherDatasets[label].data);
+
+		switch (label) {
+			case 'Measured Temperature':
+				if (max >= 80) {
+					max = 100;
+				} else {
+					max = (Math.round(max) + 20)
+				}
+	
+				if (Math.round(min) >= 10) {
+					min = (Math.floor((Math.round(min) - 10)/5)*5)
+				} else {
+					min = 0
+				}
+				break;
+			case 'Precipitation':
+			case 'Rain':
+				let precipMax = Math.floor(max) + 0.5;
+				max = (precipMax);
+
+				min = (0)
+
+				break;
+			case 'Visibility':
+				let visibilityMax = Math.ceil(max) + 10000;
+				max = (visibilityMax);
+
+				break;
+			default:
+				max = (max + 20);
+
+				if (Math.round(min) >= 10) {
+					min = (Math.floor((Math.round(min) - 10)/5)*5)
+				} else {
+					min = 0;
+				}
+				break;
+		}
+
+		return {
+			min,
+			max
+		}
+	}
+
+	const [chartMin, setChartMin] = useState(getMinMax('Measured Temperature').min);
+	const [chartMax, setChartMax] = useState(getMinMax('Measured Temperature').max);
+
 	const [chartIdKey, setChartIdKey] = useState('id');
 
-	function tabClickHandler (e) {
+	function labelTabClickHandler (e) {
 		const labelClicked = this.dataset.label;
 
 		if (this.classList.contains(styles['active'])) {
@@ -732,57 +870,40 @@ export const ChartElement = (props) => {
 		setActiveWeatherLabels([labelClicked])
 	}
 
-	useEffect(() => {
-		const parent = document.querySelector(`.${styles['analyze-tabs-grid']}`)
-		Array.from(parent.children).forEach(tab => {
-			tab.onclick = tabClickHandler;
-		})
-	})
+	function timeFrameTabClickHandler (e) {
+		const timeFrameClicked = this.dataset.frame;
 
-	useEffect(() => {
-		let max = Math.max(...weatherDatasets[activeWeatherLabels[0]].data);
-		let min = Math.min(...weatherDatasets[activeWeatherLabels[0]].data)
-
-		switch (activeWeatherLabels[0]) {
-			case 'Measured Temperature':
-				if (max >= 80) {
-					setChartMax(100)
-				} else {
-					setChartMax(Math.round(max) + 20)
-				}
-	
-				if (Math.round(min) >= 10) {
-					setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
-				} else {
-					setChartMin(0)
-				}
-				break;
-			case 'Precipitation':
-			case 'Rain':
-				setChartMin(0)
-				let precipMax = Math.floor(max) + 0.5;
-				setChartMax(precipMax);
-
-				break;
-			case 'Visibility':
-				let visibilityMax = Math.ceil(max) + 10000;
-				console.log({visibilityMax})
-				setChartMax(visibilityMax);
-
-				break;
-			default:
-				setChartMax(max + 20);
-
-				if (Math.round(min) >= 10) {
-					setChartMin(Math.floor((Math.round(min) - 10)/5)*5)
-				} else {
-					setChartMin(0)
-				}
-				break;
+		if (this.classList.contains(styles['active'])) {
+			return console.log('already');
 		}
 
-		
-	}, [activeWeatherLabels])
+		document.querySelector(`.${styles['stats-tab']}.${styles['active']}`).classList.remove(styles['active'])
+		this.classList.add(styles['active'])
+
+		let endHourIndex = 24;
+
+		if (timeFrameClicked === '48h') {
+			endHourIndex = 47;
+		} else if (timeFrameClicked === '72h') {
+			endHourIndex = 71;
+		} else if (timeFrameClicked === '7d') {
+			endHourIndex = 167;
+		}
+
+		setChartData(sliceChartData(weatherDatasets[activeWeatherLabels[0]], endHourIndex))
+	}
+
+	useEffect(() => {
+		const labelParent = document.querySelector(`.${styles['analyze-tabs-grid']}`)
+		Array.from(labelParent.children).forEach(tab => {
+			tab.onclick = labelTabClickHandler;
+		})
+
+		const timeFrameParent = document.querySelector(`.${styles['stats-tabs-grid']}`)
+		Array.from(timeFrameParent.children).forEach(tab => {
+			tab.onclick = timeFrameTabClickHandler;
+		})
+	})
 
 	useEffect(() => {
 		if (isFirstRender.current) {
@@ -794,14 +915,10 @@ export const ChartElement = (props) => {
 				activeDatasets.push(dataset)
 			})
 	
-			setChartIdKey(activeWeatherLabels.join(''));
+			const idKey = structuredClone(activeWeatherLabels).join('-')
+			setChartIdKey(idKey);
 	
-			console.log('Setting chart id to: ', activeWeatherLabels.join(''))
-	
-			/* setChartData({
-				labels: createLabels(24, 'hour', dayjs().startOf('day')),
-				datasets: activeDatasets
-			});  */
+			//console.log('Setting chart id to: ', activeWeatherLabels.join(''))
 
 			const isSame = activeDatasets.every(dataset => {
 				if (chartData.datasets.find(chartDataset => chartDataset.label == dataset.label)) {
@@ -809,24 +926,36 @@ export const ChartElement = (props) => {
 				} else {
 					return false
 				}
-			})
-
-			console.log({isSame}, weatherDatasets)
+			}) 
 
 			if (isSame == true) {
-				console.log('SAME')
+				console.log('already')
 			} else {
-				console.log('setting chart data...')
-				setChartData({
-					labels: createLabels(24, 'hour', dayjs().startOf('day')),
-					datasets: activeDatasets
-				})
+				let activeTimeFrame = 24;
+				let frameString = document.querySelector(`.${styles['stats-tab']}.${styles['active']}`).dataset.frame;
+				if (frameString === '48h') {
+					activeTimeFrame = 47;
+				} else if (frameString === '72h') {
+					activeTimeFrame = 71;
+				} else if (frameString === '7d') {
+					activeTimeFrame = 167;
+				}
+
+				let newChartData = sliceChartData(weatherDatasets[activeWeatherLabels[0]], activeTimeFrame)
+				console.log('setting chart data to', newChartData)
+				setChartData(newChartData);
+
+				let { min, max } = getMinMax(activeWeatherLabels[0])
+				setChartMin(min)
+				setChartMax(max)
 			}
 		}
-	}, [activeWeatherLabels]) 
+	}, [activeWeatherLabels])  
 
 	useEffect(() => {
 		const chart = chartRef.current;
+
+		console.log('setting gradient')
 	
 		if (!chart) {
 		  return;
@@ -858,13 +987,17 @@ export const ChartElement = (props) => {
 		setChartData(addedGradientChartData);
 	  }, []);
 
+	const dataArray = chartData.datasets[0].data;
+	let highIndex = dataArray.indexOf(Math.max(...dataArray));
+	let lowIndex = dataArray.indexOf(Math.min(...dataArray));
+
     return (
 		<div ref={parentRef} className={styles['chart-parent']}>
 			<Line
 				ref={chartRef}
 				datasetIdKey={chartIdKey}
 				data={chartData}
-				plugins={[plugin]}
+				plugins={[hoverLine, drawVerticalLine]}
 				options={{
 					maintainAspectRatio: false,
 					plugins: {
@@ -872,6 +1005,20 @@ export const ChartElement = (props) => {
 							display: false
 						},
 						verticalLiner: {},
+						drawVerticalLine: {
+							current: {
+								index: props.timeIndex,
+								text: 'Now'
+							},
+							max: {
+								index: highIndex,
+								text: 'Max'
+							},
+							min: {
+								index: lowIndex,
+								text: 'Min'
+							}
+						},
 						tooltip: {
 							enabled: false,
 							position: 'nearest',
@@ -1019,7 +1166,6 @@ const mixColors = (color1, color2, percent) => {
   
 // example usage: get the color value at y = 25%
 const colorAt25 = getColorFromGradientAtY(50, ['#2d4b48', '#444a35', '#ffa900']);
-console.log({colorAt25})
 
 
 // RADAR
@@ -1050,7 +1196,6 @@ export const Radar = (props) => {
 	useEffect(() => {
 		const check = async () => {
 			const [mapboxInstance, endpoints] = await initializeMap;
-			console.log({mapboxInstance, endpoints});
 
 			const radarElement = radarElementRef.current;
 			const Map = new mapboxInstance.Map({

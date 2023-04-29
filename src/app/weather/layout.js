@@ -1,7 +1,5 @@
 import "../styles/globals.css";
 
-import { manrope } from "../utils/fonts";
-
 
 export default function WeatherLayout({
     // Layouts must accept a children prop.
@@ -9,7 +7,7 @@ export default function WeatherLayout({
     children,
   }) {
     return (
-      <html lang="en" className={manrope.className}>
+      <html lang="en">
         <body>
             {children}
         </body>

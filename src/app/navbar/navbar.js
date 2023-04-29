@@ -1,8 +1,6 @@
 import Link from 'next/link';
 
 export const Navbar = (searchParams, label) => {
-    console.log({searchParams})
-
     const navSearchParams = new URLSearchParams(searchParams).toString();
 
     return (

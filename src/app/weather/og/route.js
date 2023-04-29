@@ -71,8 +71,6 @@ export async function GET(request) {
   const search = request.nextUrl.search;
   const params = Object.fromEntries(new URLSearchParams(search));
 
-  console.log(params.offset)
-
   const dateElement = dating(params.offset, params.zone, [params.lat, params.lon])
 
   const {manrope400ArrayBuffer, manrope700ArrayBuffer} = await font();

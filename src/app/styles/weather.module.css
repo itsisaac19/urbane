@@ -85,9 +85,11 @@
     display: grid;
     font-weight: 400;
     font-size: 14px;
-    grid-auto-flow: column;
-    width: max-content;
-    column-gap: 27px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+
+    width: auto;
+    column-gap: 4px;
+    row-gap: 4px;
 }
 .weather-updates .time-value {
     color: var(--accent-text);
@@ -95,18 +97,50 @@
 .weather-updates .filler {
     color: var(--secondary-text);
 }
-.weather-updates .update-now-text {
-    color: var(--accent-text);
-    text-decoration: underline;
+.updated {
+    padding: 10px 20px 10px 15px;
+    border: 1px solid var(--gridline);
 }
+.next-update {
+    padding: 10px 20px 10px 15px;
+    border: 1px solid var(--gridline);
+}
+.update-now-wrap {
+    cursor: pointer;
+    border: 1px solid var(--gridline);
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: auto min-content;
+    
+    transition: background 0.3s ease, color 0.3s ease;
+}
+.update-now-wrap:hover {
+    background: var(--primary-tile);
+
+}
+.weather-updates .update-now-text {
+    padding: 10px 20px 10px 15px;
+
+    color: var(--accent-text);
+    text-decoration: none;
+}
+.update-icon {
+    margin: auto 15px auto 0;
+    width: 25px;
+    height: 25px;
+    fill: var(--secondary-text);
+    transition: fill 0.3s ease;
+}
+.update-now-wrap:hover .update-icon {
+    fill: var(--accent-text);
+}
+
 
 .share-link {
     cursor: pointer;
-    position: absolute;
-    right: 38px;
-    bottom: 30px;
     display: grid;
     grid-auto-flow: column;
+    grid-template-columns: auto min-content;
 
     background: none;
     border: 1px solid var(--gridline);
@@ -116,14 +150,15 @@
     cursor: pointer;
     width: max-content;
     height: auto;
-    padding: 10px 10px 10px 20px;
+    padding: 10px 10px 10px 15px;
     font: inherit;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     border-radius: 0;
     background: none;
     color: var(--secondary-text);
     border: none;
+    color: var(--accent-text);
 
 
     transition: color 0.3s ease;
@@ -140,10 +175,10 @@
     width: 25px;
     height: 25px;
     fill: var(--secondary-text);
+    transition: fill 0.3s ease;
 }
 .share-link:hover .share-icon {
     fill: var(--accent-text);
-
 }
 
 .grid-card.clock {
@@ -225,6 +260,11 @@
 .grid-card.mini-radar {
     display: grid;
     grid-template-rows: 27px 1fr max-content;
+    height: 100%;
+    aspect-ratio: 16/10;
+    width: 100%;
+    min-height: 300px;
+    max-height: 50vh;
 }
 .mini-radar .banner {
     width: auto;
@@ -397,7 +437,7 @@
 
     height: auto;
     width: calc(100% - 20px);
-    translate: 0 -100%;
+    translate: 0 0%;
 
     padding: 5px 10px;
 
@@ -412,7 +452,7 @@
     color: var(--primary-text);
 
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, translate 0.1s ease;
 }
 .pinned .tile-item::after {
     content: ' ↓ Drag to unpin \a0|\a0  click to learn more';
@@ -421,6 +461,7 @@
     content: ' ↑ Drag to pin \a0|\a0  click to learn more';
 } 
 .tile-item:hover::after {
+    translate: 0 -100%;
     opacity: 1;
 }
 
@@ -626,7 +667,7 @@
     height: auto;
     display: grid;
     grid-auto-flow: column;
-    grid-template-columns: max-content max-content;
+    grid-template-columns: auto;
     
     width: 100%;
 }
@@ -634,7 +675,8 @@
     position: relative;
     margin: 0 0 0 0px;
     display: grid;
-    grid-auto-flow: column;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    row-gap: 4px;
     column-gap: 4px;
 
     width: 100%;
@@ -643,7 +685,8 @@
 .analyze-tab {
     cursor: pointer;
     margin: auto;
-    padding: 11px 30px;
+    margin: 0px;
+    padding: 10px 15px;
     font-weight: 600;
     font-size: 14px;
     line-height: 18px;
@@ -702,6 +745,8 @@
     line-height: 18px;
     color: var(--secondary-text);
     background: var(--secondary-tile);
+
+    transition: color 0.3s ease, background 0.3s ease;
 }
 .stats-tab.active {
     color: var(--accent-text);
@@ -734,6 +779,9 @@
     }
     .sub-grid-1 {
         grid-template-columns: 55% 45%;
+    }
+    .grid-card.mini-radar {
+        max-height: 40vh;
     }
     .grid-card.header {
         padding: 23px 23px 0 33px;
@@ -772,18 +820,20 @@
     }
 }
 
-@media (max-width: 850px) {
+@media (max-width: 1250px) {
     .sub-grid-1 {
         grid-template-columns: auto;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 1fr auto;
     }
     .sub-grid-2 {
         grid-template-columns: auto;
         grid-template-rows: 1fr 1fr;
     }
+    .grid-card.mini-radar {
+        min-height: 0;
+    }
     .weather-updates {
-        grid-auto-flow: row;
-        row-gap: 5px;
+
     }
     .explain-close {
         margin: 20px 0 0 0;
