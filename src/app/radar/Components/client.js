@@ -41,22 +41,45 @@ const parseTimeDimensionFromMosaic = (mosaicURL) => {
     }
 }
 
+
 const loadBaseRadarMosaicList = async (tileSize) => {
+    console.log({tileSize})
     const GetCapabilitiesReq = await fetch(`https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?SERVICE=WMS&request=GetCapabilities`);
     const res = await GetCapabilitiesReq.text();
-    const xml = new DOMParser().parseFromString(res, 'text/xml');
-    
-    const GetCapabilitiesJSON = xmlToJson(xml);
 
-    let timeDimensionsArray = GetCapabilitiesJSON.WMS_Capabilities.Capability.Layer.Layer.Dimension["#text"]["#text"].split(',');
+
+    let {timeDimensionsArray, GetCapabilitiesJSON} = await new Promise(async (resolve) => {
+        try {
+            const xml = new DOMParser().parseFromString(res, 'text/xml');
+            let GetCapabilitiesJSON = xmlToJson(xml);
+            let timeDimensionsArray = GetCapabilitiesJSON.WMS_Capabilities.Capability.Layer.Layer.Dimension["#text"]["#text"].split(',');
+            
+            if (xml) {
+                console.log('Using `DOMParser()`')
+                resolve({
+                    timeDimensionsArray, 
+                    GetCapabilitiesJSON
+                })
+            }
+        
+        } catch (error) {
+            /* const converter = (await import('xml-js')).xml2js; 
+            let GetCapabilitiesJSON = converter(res, {compact: true, spaces: 4})
+            let timeDimensionsArray = GetCapabilitiesJSON.WMS_Capabilities.Capability.Layer.Layer.Dimension['_text'].split(',');
+
+            console.log('wait...') */
+        }
+    })
+
+    console.log(GetCapabilitiesJSON)
                     
     timeDimensionsArray = timeDimensionsArray.filter((element, index) => {
         return (index) % 3 === 0;
     })
 
-    console.log(timeDimensionsArray.map(dimension => {
+    console.log({timeDimensions: timeDimensionsArray.map(dimension => {
         return dayjs(dimension).format('h:mm a')
-    }))
+    })})
 
     timeDimensionsArray = timeDimensionsArray.map(dimension => {
         return baseRadarQCMosaicURL(dimension, tileSize)
@@ -76,7 +99,7 @@ export const Radar = (props) => {
 		const mapboxgl = (await import('mapbox-gl')).default;
 		mapboxgl.accessToken = mapboxToken;
 
-        const tileSize = 512;
+        const tileSize = 256;
 
         const baseRadarMosaicList = await loadBaseRadarMosaicList(tileSize);
 
@@ -307,8 +330,8 @@ export const Radar = (props) => {
                     container: radarElement.id,
                     style: "mapbox://styles/mapbox/dark-v10",
                     center: [longitude, latitude], // starting position
-                    zoom: 5, // starting zoom
-                    minZoom: 5,
+                    zoom: 6, // starting zoom
+                    minZoom: 6,
                     maxZoom: 8,
                     transition: {
                         duration: 0,
@@ -378,6 +401,7 @@ const selectByClassName = (CSSSelector, styles) => {
  */
 const updateCurrentTimer = (styles) => {
     const currentTimer = selectByClassName('current-time-value', styles);
+    if (!currentTimer) return;
     currentTimer.innerHTML = dayjs().format('h:mm A');
 }
 
