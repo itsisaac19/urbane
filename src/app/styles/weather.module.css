@@ -52,7 +52,7 @@
 }
 .weather-header {
     font-weight: 400;
-    font-size: 64px;
+    font-size: 50px;
     text-transform: uppercase;
     line-height: 115.6%;
 
@@ -72,7 +72,7 @@
 }
 .weather-details-value {
     font-weight: 400;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1.4em;
     color: var(--secondary-text);
 }
@@ -85,7 +85,7 @@
     display: grid;
     font-weight: 400;
     font-size: 14px;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 
     width: auto;
     column-gap: 4px;
@@ -113,6 +113,7 @@
     grid-template-columns: auto min-content;
     
     transition: background 0.3s ease, color 0.3s ease;
+    
 }
 .update-now-wrap:hover {
     background: var(--primary-tile);
@@ -261,10 +262,9 @@
     display: grid;
     grid-template-rows: 27px 1fr max-content;
     height: 100%;
-    aspect-ratio: 16/10;
     width: 100%;
     min-height: 300px;
-    max-height: 50vh;
+    max-height: 100%;
 }
 .mini-radar .banner {
     width: auto;
@@ -724,21 +724,24 @@
 }
 .stats-tab-bar {
     display: grid;
-    grid-auto-flow: column;
     height: 33px;
-    grid-template-columns: max-content max-content;
 }
 
 .stats-tabs-grid {
     margin: 0 0 0 0px;
     display: grid;
-    grid-auto-flow: column;
-    column-gap: 4px;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 4px;
 }
 .stats-tab {
     cursor: pointer;
     margin: auto;
-    padding: 11px 30px;
+    padding: 11px 20px;
+    width: 100%;
+
+    display: grid;
+    place-items: center;
 
     font-weight: 600;
     font-size: 14px;
@@ -830,7 +833,7 @@
         grid-template-rows: 1fr 1fr;
     }
     .grid-card.mini-radar {
-        min-height: 0;
+        
     }
     .weather-updates {
 

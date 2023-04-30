@@ -25,7 +25,7 @@ export default async function Home({ searchParams }) {
 	const lastReqTime = dayjs().toISOString();
 
   return (
-    <div className={`${styles['master-wrap']} ${manrope.className} __className_6e4617`}>
+    <div className={`${styles['master-wrap']} ${manrope.className}`}>
         {Navbar(searchParams, 'home')}
         <div className={styles['master-grid']}>
             <div className={`${styles['sub-grid-1']} ${styles['temp-fixed']}`}>

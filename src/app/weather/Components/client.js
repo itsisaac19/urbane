@@ -3,6 +3,7 @@
 import { nanoid } from 'nanoid'
 import { createRef, useRef, useEffect, useState } from 'react';
 import { analyze384hourArray, getWeatherDescription } from '@/app/utils/explain';
+import { manrope } from '@/app/utils/fonts';
 
 
 const dayjs = require('dayjs');
@@ -298,21 +299,19 @@ export const TilesGrid = (props) => {
 
 	const gridRef = createRef();
 	const isFirstRender = useRef(true); 
-	const isSubsequentRender = useRef(true); 
 
-	if (props.prefix === 'all') {
-		useEffect(() => {
+	useEffect(() => {
+		if (!tileLabels) return;
+
+		if (props.prefix === 'all') {
 			if (isFirstRender.current) {
-				isFirstRender.current = false;
-			} else if (isSubsequentRender.current) {
-				isSubsequentRender.current = false;
 
-				//console.log('called from pinnedTiles', tileLabels)
+				console.log('pinning tiles...', tileLabels);
 				tileLabels.pinned.forEach(tileLabel => {
 					let pinnedContainer = document.querySelector(`.${styles['pinned']} .${styles['tiles-grid']}`);
 					let tileToPin = gridRef.current.querySelector(`[data-label="${tileLabel}"]`);
 					
-					if (pinnedContainer) {
+					if (pinnedContainer && tileToPin) {
 						pinnedContainer.appendChild(tileToPin)
 					}
 				})
@@ -322,11 +321,14 @@ export const TilesGrid = (props) => {
 					let allContainer = document.querySelector(`.${styles['all']} .${styles['tiles-grid']}`);
 					let tileToPin = gridRef.current.querySelector(`[data-label="${tileLabel}"]`);
 					
-					allContainer.appendChild(tileToPin)
+					if (allContainer & tileToPin) {
+						allContainer.appendChild(tileToPin)
+					}
 				})
 			}
-		}, [tileLabels])
-	}
+		}
+	}, [tileLabels])
+
 
 	let currentTimeout = 'hidden';
 
@@ -579,19 +581,19 @@ const drawLine = (chart, text, x, y) => {
 	
 	const scale = chart.scales['y'];
 
-	let pos = scale.top + 30;
+	let pos = scale.top + 20;
 	let strokeStyle = '#FFFFFF60';
 
 	if (text == 'Max' || text == 'Min') {
-		pos = y - 20;
+		//pos = y - 20;
 		strokeStyle = '#FFFFFF20'
 	}
 	
 	ctx.strokeStyle = strokeStyle;
 
 	ctx.beginPath();
-	ctx.moveTo(x, top);
-	ctx.lineTo(x, bottom);
+	ctx.moveTo(x, bottom);
+	ctx.lineTo(x, top + 30);
 	ctx.stroke();
 
 	ctx.fillStyle = "#FFFFFF";
@@ -991,6 +993,8 @@ export const ChartElement = (props) => {
 	let highIndex = dataArray.indexOf(Math.max(...dataArray));
 	let lowIndex = dataArray.indexOf(Math.min(...dataArray));
 
+	const fontFamily = manrope.className.replace('className', 'Manrope');
+
     return (
 		<div ref={parentRef} className={styles['chart-parent']}>
 			<Line
@@ -1078,7 +1082,7 @@ export const ChartElement = (props) => {
 								},
 								color: '#b8aea2',
 								font: {
-									family: '__Manrope_6e4617',
+									family: fontFamily,
 									weight: 600
 								}
 							}
@@ -1089,7 +1093,7 @@ export const ChartElement = (props) => {
 							},
 							ticks: {
 								font: {
-									family: '__Manrope_6e4617',
+									family: fontFamily,
 									weight: 600
 								},
 								autoSkip: true,
@@ -1243,17 +1247,67 @@ export const ShareButton = (props) => {
 	const buttonRef = createRef();
 
 	useEffect(() => {
-		buttonRef.current.onclick = async (e) => {
-			const URL = window.location.href;
+		const updateNowWrapper = document.querySelector(`.${styles['update-now-wrap']}`);
+		if (updateNowWrapper) {
+			updateNowWrapper.onclick = (e) => {
+				window.location.reload();
+			}
 
-			try {
-				await navigator.clipboard.writeText(URL);
-				alert(`Copied shareable link to clipboard!`)
-				console.log('Content copied to clipboard');
-			} catch (err) {
-				console.error('Failed to copy: ', err);
+		}
+
+		const wrapper = buttonRef.current.parentElement;
+		if (wrapper) {
+			wrapper.onclick = async (e) => {
+				const URL = window.location.href;
+				console.log(e)
+	
+				if (navigator.share) { 
+					navigator.share({
+					   title: document.querySelector('meta[property="og:title"]').textContent,
+					   url: URL
+					 }).then(() => {
+					   console.log('share API success.');
+					 })
+					 .catch((err) => {
+						console.error(err)
+						throw 'error'
+					 });
+				} else {
+					try {
+						navigator.clipboard.writeText(URL).then(() => {
+							alert(`Copied shareable link to clipboard!`)
+							console.log('Content copied to clipboard');
+						});
+						
+					} catch (err) {
+						alert('Failed to copy: ')
+						// Use the 'out of viewport hidden text area' trick
+						const textArea = document.createElement("textarea");
+						textArea.value = URL;
+  
+						// Avoid scrolling to bottom
+						textArea.style.top = "0";
+						textArea.style.left = "0";
+						textArea.style.position = "fixed";
+					  
+						document.body.appendChild(textArea);
+						textArea.focus();
+						textArea.select();
+					  
+						try {
+						  var successful = document.execCommand('copy');
+						  var msg = successful ? 'successful' : 'unsuccessful';
+						  console.log('Fallback: Copying text command was ' + msg);
+						} catch (err) {
+						  console.error('Fallback: Oops, unable to copy', err);
+						}
+					  
+						document.body.removeChild(textArea);
+					}
+				}
 			}
 		}
+
 	}, [])
 
 	return (

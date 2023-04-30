@@ -380,7 +380,7 @@ export const Radar = (props) => {
 
         }
         assignListeners(['base-radar'])
-	})
+	}, [])
 
 
     return (<div id={'home-radar'} className={styles['mapbox-radar']} ref={radarElementRef}></div>);
