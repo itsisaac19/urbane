@@ -1,6 +1,6 @@
 import React from "react";
 
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { nanoid } from 'nanoid';
 import { TilesWrapper, ChartElement } from './client';
 
@@ -17,11 +17,25 @@ import { TilesWrapper, ChartElement } from './client';
 */
 
 /**
+ * @typedef {Object} AdjustedDayjsOptions
+ * @property {string} dateString - A parseable date string
+ * @property {Object} instance - A dayjs instance
+ * @property {number} timeZoneOffset - The time zone offset in minutes.
  * 
- * @param {number} timeZoneOffset - The time zone offset in minutes.
- * @returns dayjs() instance with adjusted the timezone
+ * @param {AdjustedDayjsOptions} options
+ * @returns {Dayjs} dayjs() instance with adjusted the timezone
  */
-const adjustedDayjsInstance = (timeZoneOffset) => dayjs().utcOffset(parseInt(timeZoneOffset));
+const adjustedDayjsInstance = (options) => {
+  if (options.dateString) {
+    return dayjs(options.dateString).utcOffset(options.timeZoneOffset)
+  }
+
+  if (options.instance) {
+    return dayjs(options.instance).utcOffset(options.timeZoneOffset)
+  }
+
+  return dayjs().utcOffset(options.timeZoneOffset)
+};
 
 export const OpenMeteoData = async (customParamString='', props={
     startDate: '',
@@ -289,7 +303,9 @@ export const WeatherHeader = async (props) => {
 
     console.log({timeZoneOffset, og})
     
-    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
+    const startDate = adjustedDayjsInstance({
+      timeZoneOffset
+    }).format('YYYY-MM-DD');
     const endDate = startDate;
 
     const openMeteoData = await OpenMeteoData('&current_weather=true', {
@@ -407,8 +423,12 @@ export const WeatherTiles = async (props) => {
       og
     } = props;
 
-    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
-    const endDate = adjustedDayjsInstance(timeZoneOffset).add(15, 'days').format('YYYY-MM-DD');
+    const startDate = adjustedDayjsInstance({
+      timeZoneOffset
+    }).format('YYYY-MM-DD');
+    const endDate = adjustedDayjsInstance({
+      timeZoneOffset
+    }).add(15, 'days').format('YYYY-MM-DD');
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
         startDate,
@@ -452,7 +472,9 @@ export const WeatherTiles = async (props) => {
     const pinnedTilesChildren = [];
     const allTilesChildren = [];
 
-    let currentTime = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DDTHH:00');
+    let currentTime = adjustedDayjsInstance({
+      timeZoneOffset
+    }).format('YYYY-MM-DDTHH:00');
     let timeIndex = hourlyWeather.time.indexOf(currentTime);
     //console.log({timeIndex, currentTime})
 
@@ -487,7 +509,10 @@ export const WeatherTiles = async (props) => {
 
         if (displayLabel.match('Sunrise|Sunset')) {
             let hourChar = (units == 'metric') ? 'H' : 'h';
-            displayValue = adjustedDayjsInstance(timeZoneOffset).format(`${hourChar}:mm A`) 
+            displayValue = adjustedDayjsInstance({
+              timeZoneOffset,
+              dateString: displayValue
+            }).format(`${hourChar}:mm A`) 
         };
 
         if (displayLabel.match('Direction')) {
@@ -588,10 +613,14 @@ export const Chart = async (props) => {
       timeZoneOffset
     } = props;
 
-    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
+    const startDate = adjustedDayjsInstance({
+      timeZoneOffset
+    }).format('YYYY-MM-DD');
     
     // Maximum 7-day timeframe
-    const endDate = adjustedDayjsInstance(timeZoneOffset).add(6, 'days').format('YYYY-MM-DD');
+    const endDate = adjustedDayjsInstance({
+      timeZoneOffset
+    }).add(6, 'days').format('YYYY-MM-DD');
 
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
@@ -603,7 +632,9 @@ export const Chart = async (props) => {
     })
 
     const hourlyWeather = openMeteoData.hourly;
-    let currentTime = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DDTHH:00');
+    let currentTime = adjustedDayjsInstance({
+      timeZoneOffset
+    }).format('YYYY-MM-DDTHH:00');
     let timeIndex = hourlyWeather.time.indexOf(currentTime);
 
     const datasets = {};
