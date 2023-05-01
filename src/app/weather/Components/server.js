@@ -4,6 +4,25 @@ import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
 import { TilesWrapper, ChartElement } from './client';
 
+/**
+ * @typedef {Object} DefaultPropsTemplate
+ * @property {number} latitude - The latitude of the location.
+ * @property {number} longitude - The longitude of the location.
+ * @property {string} city - The name of the city.
+ * @property {string} [units='metric'] - The unit system to use for the temperature (default: 'metric').
+ * @property {boolean} [precision=true] - Whether to show the precision of the temperature (default: true).
+ * @property {number} [timeZoneOffset] - The time zone offset in minutes.
+ * @property {Object} [styles] - An object containing custom styles for the component.
+ * @property {boolean} [og=false] - Whether or not to engage the OpenGraph styles 
+*/
+
+/**
+ * 
+ * @param {number} timeZoneOffset - The time zone offset in minutes.
+ * @returns dayjs() instance with adjusted the timezone
+ */
+const adjustedDayjsInstance = (timeZoneOffset) => dayjs().utcOffset(parseInt(timeZoneOffset));
+
 export const OpenMeteoData = async (customParamString='', props={
     startDate: '',
     endDate: '',
@@ -251,8 +270,26 @@ const parseOpenWeatherMapCode = (code) => {
       }
 }
 
-export const WeatherHeader = async ({latitude, longitude, city, units='metric', styles, og=false}) => {
-    const startDate = dayjs().format('YYYY-MM-DD');
+/**
+ * 
+ * @param {DefaultPropsTemplate} props 
+ * @returns {JSX}
+ */
+export const WeatherHeader = async (props) => {
+    const {
+      latitude, 
+      longitude, 
+      city, 
+      units, 
+      precision, 
+      styles, 
+      timeZoneOffset,
+      og
+    } = props;
+
+    console.log({timeZoneOffset, og})
+    
+    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
     const endDate = startDate;
 
     const openMeteoData = await OpenMeteoData('&current_weather=true', {
@@ -281,8 +318,8 @@ export const WeatherHeader = async ({latitude, longitude, city, units='metric', 
                     fontSize: "85px", 
                     textTransform: "none", 
                     letterSpacing: '-0.05em',
-                    lineHeight: "90px",
-                    padding: "70px 0px 30px 70px"
+                    lineHeight: "80px",
+                    padding: "70px 0px 0px 70px"
                 }
             }>It's {currentTemp}{units == 'metric' ? '°C' : '°F'} and {currentWeather} in {city}.</span> 
         )  
@@ -353,10 +390,25 @@ const betterLabels = {
     winddirection_10m_dominant: 'Dominant Wind Direction'
 };
 
-export const WeatherTiles = async ({latitude, longitude, city, units='metric', precision=true, styles}) => {
+/**
+ * 
+ * @param {DefaultPropsTemplate} props 
+ * @returns 
+ */
+export const WeatherTiles = async (props) => {
+    const {
+      latitude, 
+      longitude, 
+      city, 
+      units, 
+      precision, 
+      styles, 
+      timeZoneOffset,
+      og
+    } = props;
 
-    const startDate = dayjs().format('YYYY-MM-DD');
-    const endDate = dayjs().add(15, 'days').format('YYYY-MM-DD');
+    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
+    const endDate = adjustedDayjsInstance(timeZoneOffset).add(15, 'days').format('YYYY-MM-DD');
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
         startDate,
@@ -400,7 +452,7 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
     const pinnedTilesChildren = [];
     const allTilesChildren = [];
 
-    let currentTime = dayjs().format('YYYY-MM-DDTHH:00');
+    let currentTime = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DDTHH:00');
     let timeIndex = hourlyWeather.time.indexOf(currentTime);
     //console.log({timeIndex, currentTime})
 
@@ -435,7 +487,7 @@ export const WeatherTiles = async ({latitude, longitude, city, units='metric', p
 
         if (displayLabel.match('Sunrise|Sunset')) {
             let hourChar = (units == 'metric') ? 'H' : 'h';
-            displayValue = dayjs(displayValue).format(`${hourChar}:mm A`) 
+            displayValue = adjustedDayjsInstance(timeZoneOffset).format(`${hourChar}:mm A`) 
         };
 
         if (displayLabel.match('Direction')) {
@@ -519,11 +571,27 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
 
 
 
-export const Chart = async ({latitude, longitude, city, units='metric', styles}) => {
-    const startDate = dayjs().format('YYYY-MM-DD');
+
+/**
+ * 
+ * @param {DefaultPropsTemplate} props 
+ * @returns 
+ */
+export const Chart = async (props) => {
+    const {
+      latitude, 
+      longitude, 
+      city, 
+      units, 
+      precision, 
+      styles, 
+      timeZoneOffset
+    } = props;
+
+    const startDate = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DD');
     
     // Maximum 7-day timeframe
-    const endDate = dayjs().add(6, 'days').format('YYYY-MM-DD');
+    const endDate = adjustedDayjsInstance(timeZoneOffset).add(6, 'days').format('YYYY-MM-DD');
 
 
     const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
@@ -535,7 +603,7 @@ export const Chart = async ({latitude, longitude, city, units='metric', styles})
     })
 
     const hourlyWeather = openMeteoData.hourly;
-    let currentTime = dayjs().format('YYYY-MM-DDTHH:00');
+    let currentTime = adjustedDayjsInstance(timeZoneOffset).format('YYYY-MM-DDTHH:00');
     let timeIndex = hourlyWeather.time.indexOf(currentTime);
 
     const datasets = {};

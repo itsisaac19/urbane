@@ -987,7 +987,7 @@ export const ChartElement = (props) => {
 		setGridLineColor(getComputedStyle(document.body).getPropertyValue('--gridline'))		 
 
 		setChartData(addedGradientChartData);
-	  }, []);
+	}, []);
 
 	const dataArray = chartData.datasets[0].data;
 	let highIndex = dataArray.indexOf(Math.max(...dataArray));
@@ -1263,15 +1263,15 @@ export const ShareButton = (props) => {
 	
 				if (navigator.share) { 
 					navigator.share({
-					   title: document.querySelector('meta[property="og:title"]').textContent,
-					   url: URL
-					 }).then(() => {
-					   console.log('share API success.');
-					 })
-					 .catch((err) => {
+						title: document.querySelector('meta[property="og:title"]').textContent,
+						url: URL
+					}).then(() => {
+						console.log('share API success.');
+					})
+					.catch((err) => {
 						console.error(err)
 						throw 'error'
-					 });
+					});
 				} else {
 					try {
 						navigator.clipboard.writeText(URL).then(() => {
@@ -1284,24 +1284,24 @@ export const ShareButton = (props) => {
 						// Use the 'out of viewport hidden text area' trick
 						const textArea = document.createElement("textarea");
 						textArea.value = URL;
-  
+						
 						// Avoid scrolling to bottom
 						textArea.style.top = "0";
 						textArea.style.left = "0";
 						textArea.style.position = "fixed";
-					  
+						
 						document.body.appendChild(textArea);
 						textArea.focus();
 						textArea.select();
-					  
+						
 						try {
-						  var successful = document.execCommand('copy');
-						  var msg = successful ? 'successful' : 'unsuccessful';
-						  console.log('Fallback: Copying text command was ' + msg);
+							var successful = document.execCommand('copy');
+							var msg = successful ? 'successful' : 'unsuccessful';
+							console.log('Fallback: Copying text command was ' + msg);
 						} catch (err) {
-						  console.error('Fallback: Oops, unable to copy', err);
+							console.error('Fallback: Oops, unable to copy', err);
 						}
-					  
+						
 						document.body.removeChild(textArea);
 					}
 				}

@@ -1,13 +1,20 @@
 import styles from '../styles/weather.module.css';
 
 import { WeatherHeader, DetailedWeather, WeatherTiles, Chart } from './Components/server';
-import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton } from './Components/client';
 import { Navbar } from "@/app/navbar/navbar";
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
+
+import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton } from './Components/client';
 import { manrope } from "../utils/fonts";
 
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 export default async function Home({ searchParams }) {
 
@@ -15,7 +22,7 @@ export default async function Home({ searchParams }) {
     const navSearchParams = new URLSearchParams(searchParams).toString();
 
     if (!(searchParams.lat && searchParams.lon && searchParams.units && searchParams.city && searchParams.offset)) {
-        //redirect('/');
+        redirect('/');
     }
 
     const coordinates = [searchParams.lat, searchParams.lon];
@@ -23,6 +30,15 @@ export default async function Home({ searchParams }) {
     const units = searchParams.units;
 
 	const lastReqTime = dayjs().toISOString();
+
+    const defaultProps = {
+        latitude: coordinates[0],
+        longitude: coordinates[1],
+        city: city,
+        units: units,
+        styles: styles,
+        timeZoneOffset: parseInt(searchParams.offset),
+    }
 
   return (
     <div className={`${styles['master-wrap']} ${manrope.className}`}>
@@ -32,13 +48,7 @@ export default async function Home({ searchParams }) {
                 <div className={`${styles['grid-card']} ${styles['header']}`}>
                     <div className={`${styles['weather-header']}`}>
 						<Suspense fallback={<div>IT'S ___________ AND _____________ IN ____________</div>}>
-                        	<WeatherHeader
-								latitude={coordinates[0]}
-								longitude={coordinates[1]}
-								city={city}
-								units={units}
-								styles={styles}
-							/>
+                        	<WeatherHeader {...defaultProps} />
 						</Suspense>
 						
                     </div>
@@ -99,13 +109,7 @@ export default async function Home({ searchParams }) {
                     </div>
                     <div className={`${styles['radar-wrap']}`}>
                         <Suspense fallback={<div>Loading radar ...</div>}>
-                            <Radar
-                                latitude={coordinates[0]}
-                                longitude={coordinates[1]}
-                                city={city}
-                                units={units}
-                                styles={styles}
-                            />
+                            <Radar {...defaultProps} />
                         </Suspense>
                     </div>
                     <div className={`${styles['temporal-footer']}`}>
@@ -117,13 +121,7 @@ export default async function Home({ searchParams }) {
             <div className={styles['sub-grid-2']}>
                 <div className={`${styles['grid-card']} ${styles['tiles']}`}>
 					<Suspense>
-						<WeatherTiles
-							latitude={coordinates[0]}
-							longitude={coordinates[1]}
-							city={city}
-							units={units}
-							styles={styles}
-						/>
+						<WeatherTiles {...defaultProps} />
 					</Suspense>
                     <div className={`${styles['tile-explain-wrapper']} ${styles['hide']}`}>
                         <div className={`${styles['tile-explain']}`}>
@@ -147,13 +145,7 @@ export default async function Home({ searchParams }) {
                         <div className={`${styles['analyze-graph']}`}>
                             <div className={`${styles['analyze-graph-wrap']}`}>
                                 <Suspense>
-									<Chart
-										latitude={coordinates[0]}
-										longitude={coordinates[1]}
-										city={city}
-										units={units}
-										styles={styles}
-									></Chart>
+									<Chart {...defaultProps} />
 								</Suspense>
                             </div>
                         </div>

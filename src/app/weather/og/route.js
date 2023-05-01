@@ -36,7 +36,7 @@ const dating = (timeZoneOffset=0, timeZoneName='', coordinates=[]) => {
     style={{
       marginLeft: 'auto'
     }}>
-      {dayjs().format('z')} {timeZoneName} {` |  UTC ${offsetDirection}${dayjs().startOf('day').add(Math.abs(parseInt(timeZoneOffset)), 'minutes').format('HH:mm')}`}
+      {dayjs().format('z')} {timeZoneName} {` \u00A0 | \u00A0 UTC ${offsetDirection}${dayjs().startOf('day').add(Math.abs(parseInt(timeZoneOffset)), 'minutes').format('HH:mm')}`}
     </span>
     </div>
   )
@@ -80,6 +80,7 @@ export async function GET(request) {
     longitude: params.lon,
     city: params.city,
     units: params.units,
+    timeZoneOffset: params.offset,
     og: true
   })
 
