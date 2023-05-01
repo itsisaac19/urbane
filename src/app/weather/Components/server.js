@@ -406,6 +406,11 @@ const betterLabels = {
     winddirection_10m_dominant: 'Dominant Wind Direction'
 };
 
+
+const sunriseSunset = () => {
+  //https://api.sunrise-sunset.org/json?lat=45&lng=-93
+}
+
 /**
  * 
  * @param {DefaultPropsTemplate} props 
@@ -509,10 +514,7 @@ export const WeatherTiles = async (props) => {
 
         if (displayLabel.match('Sunrise|Sunset')) {
             let hourChar = (units == 'metric') ? 'H' : 'h';
-            displayValue = adjustedDayjsInstance({
-              timeZoneOffset,
-              dateString: displayValue
-            }).format(`${hourChar}:mm A`) 
+            displayValue = dayjs(displayValue).format(`${hourChar}:mm A`) 
         };
 
         if (displayLabel.match('Direction')) {
