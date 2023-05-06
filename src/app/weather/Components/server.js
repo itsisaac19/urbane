@@ -330,24 +330,26 @@ export const WeatherHeader = async (props) => {
     const currentWeather = parseWeatherCode(openMeteoData.current_weather.weathercode);
     //const currentWeather = parseOpenWeatherMapCode(openWeatherMapData.weather[0].id);
 
+    const gradient = generateTemperatureGradient(currentTemp);
+    const ogGradient = generateTemperatureGradient(currentTemp, {og: true});
+
     if (og === true) {
         return (
-            <span style={
+            <span data-gradient={ogGradient} style={
                 {
                     maxWidth: '1100px',
-                    color: '#1B1B1B',
+                    color: '#e5e0d7',
                     fontWeight: 400,
                     fontSize: "85px", 
                     textTransform: "none", 
                     letterSpacing: '-0.05em',
                     lineHeight: "80px",
-                    padding: "70px 0px 0px 70px"
+                    padding: "70px 0px 0px 70px",
                 }
             }>It's {currentTemp}{units == 'metric' ? '°C' : '°F'} and {currentWeather} in {city}.</span> 
         )  
     }
 
-    const gradient = generateTemperatureGradient(currentTemp);
 
     return (
         <>
@@ -595,7 +597,7 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
                 height: '160px',
                 overflow: 'hidden',
                 fontSize: '36px',
-                color: '#1B1B1B',
+                color: '#e5e0d7',
                 margin: '50px 70px 20px',
                 letterSpacing: '-0.03em',
             }}

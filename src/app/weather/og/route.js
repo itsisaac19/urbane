@@ -18,6 +18,7 @@ const dating = (timeZoneOffset=0, timeZoneName='', coordinates=[]) => {
     style={{
       display: 'flex',
       padding: '0px 70px 70px 70px',
+      color: '#b8aea2',
       marginTop: 'auto',
       fontSize: '25px',
       fontWeight: 700,
@@ -73,12 +74,45 @@ export async function GET(request) {
     timeZoneOffset: params.offset,
     og: true
   })
+  
+  console.log(header.props['data-gradient'])
 
   const detail = await DetailedWeather({
     latitude: params.lat,
     longitude: params.lon,
     og: true
   })
+
+  const gradientElement = (
+      <span
+      style={
+        {
+            position: 'absolute',
+            top: '0%',
+            left: '0%',
+            right: '0%',
+            bottom: '30%',
+            padding: "0px 0px 0px 0px",
+            background: header.props['data-gradient'],
+        }
+      }></span>
+  )
+  const gradientElementCover = (
+    <span
+    style={
+      {
+          position: 'absolute',
+          top: '0%',
+          left: '0%',
+          right: '0%',
+          bottom: '0%',
+          padding: "0px 0px 0px 0px",
+          backgroundSize: '100% 100%',
+          backgroundImage: 'linear-gradient(to bottom,rgba(0, 0, 0, 0.51), #1B1B1B 70%)',
+          backgroundRepeat: 'no-repeat',
+      }
+    }></span>
+  )
 
   return new ImageResponse(( 
     <div
@@ -90,6 +124,8 @@ export async function GET(request) {
       height: '100%'
     }}
     >
+        {gradientElement}
+        {gradientElementCover}
         {header}
         {detail}
         {dateElement}

@@ -17,7 +17,16 @@ function interpolateColor(startColor, endColor, percentage) {
     return Math.floor(start + (end - start) * percentage);
   }
 
-export function generateTemperatureGradient(temperature) {
+/**
+ * @typedef GradientOptionsTemplate
+ * @property {boolean} [og=false] og is for an Open Graph image.
+ * 
+ * @param {number} temperature 
+ * @param {GradientOptionsTemplate} options
+ * @returns {string} linear-gradient(155deg, ...), linear-gradient(85deg, ...)
+ */
+export function generateTemperatureGradient(temperature, options) {
+    
     if (temperature < 0) {
         temperature = 0;
     }
@@ -46,8 +55,19 @@ export function generateTemperatureGradient(temperature) {
       let startIndex = colorRange[index - 1] ?? 0;
       let endIndex = colorRange[index + 1] ?? colorRange[colorRange.length - 1];
     
-      const startColor = tinycolor(startIndex).setAlpha(0.5);
-      const endColor = tinycolor(endIndex).setAlpha(0.5);
+      const startColor = tinycolor(startIndex);
+      const endColor = tinycolor(endIndex);
+
+      if (options?.og) {
+        startColor.darken(0)
+        endColor.darken(0)
+
+        return `linear-gradient(155deg, ${startColor.toRgbString()} 0%, ${endColor.toRgbString()} 30%, #1B1B1B50 70%), 
+        linear-gradient(85deg, ${startColor.spin(50).toRgbString()} 0%, ${endColor.spin(50).toRgbString()} 30%, #1B1B1B50 70%)`;
+      }
+
+      startColor.setAlpha(0.5)
+      endColor.setAlpha(0.5)
     
       const percentage = (temperature % 100) / 100;
       const interpolatedColor = interpolateColor(startColor, endColor, percentage);
