@@ -2,7 +2,8 @@ import React from "react";
 
 import dayjs, { Dayjs } from 'dayjs';
 import { nanoid } from 'nanoid';
-import { TilesWrapper, ChartElement } from './client';
+import { TilesWrapper, ChartElement, HeaderGradient } from './client';
+import { generateTemperatureGradient } from "@/app/utils/colors";
 
 /**
  * @typedef {Object} DefaultPropsTemplate
@@ -34,6 +35,8 @@ const adjustedDayjsInstance = (options) => {
     return dayjs(options.instance).utcOffset(options.timeZoneOffset)
   }
 
+  //console.log('offset:', dayjs().utcOffset(options.timeZoneOffset))
+
   return dayjs().utcOffset(options.timeZoneOffset)
 };
 
@@ -51,7 +54,10 @@ export const OpenMeteoData = async (customParamString='', props={
         unitString = `&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch`
     }
     
-    const openMeteoRequest = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`, { cache: 'no-store' });
+    const reqString = `https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`
+    const openMeteoRequest = await fetch(reqString);
+    //console.log({props})
+
 
     return openMeteoRequest.json();
 }
@@ -303,10 +309,10 @@ export const WeatherHeader = async (props) => {
 
     console.log({timeZoneOffset, og})
     
-    const startDate = adjustedDayjsInstance({
-      timeZoneOffset
-    }).format('YYYY-MM-DD');
+    const startDate = dayjs().format('YYYY-MM-DD');
     const endDate = startDate;
+
+    console.log(startDate)
 
     const openMeteoData = await OpenMeteoData('&current_weather=true', {
         startDate,
@@ -330,7 +336,7 @@ export const WeatherHeader = async (props) => {
                 {
                     maxWidth: '1100px',
                     color: '#1B1B1B',
-                    fontWeight: 700,
+                    fontWeight: 400,
                     fontSize: "85px", 
                     textTransform: "none", 
                     letterSpacing: '-0.05em',
@@ -341,13 +347,16 @@ export const WeatherHeader = async (props) => {
         )  
     }
 
+    const gradient = generateTemperatureGradient(currentTemp);
+
     return (
         <>
-        <span className={`${styles['greeting']}`}>{GreetingText()}</span> 
+        <span data-header-gradient={gradient} className={`${styles['greeting']}`}>{/* {GreetingText()} */}</span> 
         <span className={`${styles['filler']}`}>IT'S </span> 
         <span className={`${styles['weather-info']}`}><span className={units}>{currentTemp}</span> <span className={`${styles['filler']}`}> AND </span> {currentWeather}</span> 
         <span className={`${styles['filler']}`}> IN </span> 
         <span className={`${styles['weather-info']}`}>{city}.</span>
+        <HeaderGradient {...props} gradient={gradient} />
         </>
     )
 }
@@ -550,10 +559,10 @@ const retryNWS = async ({latitude, longitude}) => {
 }
 
 export const DetailedWeather = async ({latitude, longitude, og}) => {
-    const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`, { cache: 'no-store' });
+    const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`);
     const nwsData = await nwsRequest.json();
   
-    const nwsForecastRequest = await fetch(nwsData.properties.forecast, { cache: 'no-cache' });
+    const nwsForecastRequest = await fetch(nwsData.properties.forecast);
     const nwsForecastData = await new Promise(async resolve => {
       let initial = await nwsForecastRequest.json();
       if (!initial?.properties) {
@@ -573,7 +582,7 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
   
     //console.log('got it', nwsForecastData.properties.periods[0].detailedForecast);
 
-    if (!nwsForecastData?.properties) {
+    if (!nwsForecastData?.properties?.periods) {
       console.log(nwsForecastData)
     };
     const detailedForecast = nwsForecastData.properties.periods[0].detailedForecast;
@@ -583,13 +592,14 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
             <span
             style={{
                 maxWidth: '1050px',
-                height: '200px',
+                height: '160px',
                 overflow: 'hidden',
-                fontSize: '39px',
+                fontSize: '36px',
                 color: '#1B1B1B',
-                margin: '50px 70px 20px'
+                margin: '50px 70px 20px',
+                letterSpacing: '-0.03em',
             }}
-            >{detailedForecast.substring(0, 163) + '...'}</span>
+            >{detailedForecast.substring(0, 190) + '...'}</span>
         )
     }
 

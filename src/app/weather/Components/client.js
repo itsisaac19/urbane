@@ -5,10 +5,21 @@ import { createRef, useRef, useEffect, useState } from 'react';
 import { analyze384hourArray, getWeatherDescription } from '@/app/utils/explain';
 import { manrope } from '@/app/utils/fonts';
 
-
 const dayjs = require('dayjs');
 const duration = require('dayjs/plugin/duration');
 dayjs.extend(duration);
+
+/**
+ * @typedef {Object} DefaultPropsTemplate
+ * @property {number} latitude - The latitude of the location.
+ * @property {number} longitude - The longitude of the location.
+ * @property {string} city - The name of the city.
+ * @property {string} [units='metric'] - The unit system to use for the temperature (default: 'metric').
+ * @property {boolean} [precision=true] - Whether to show the precision of the temperature (default: true).
+ * @property {number} [timeZoneOffset] - The time zone offset in minutes.
+ * @property {Object} [styles] - An object containing custom styles for the component.
+ * @property {boolean} [og=false] - Whether or not to engage the OpenGraph styles 
+*/
 
 export const ReadableDate = () => {
 	return dayjs().format('dddd MMMM D')
@@ -248,6 +259,7 @@ export const TilesGrid = (props) => {
     }
 
     function drop(ev) {
+		ev.preventDefault();
 
         const data = ev.dataTransfer.getData('text');
 		const tileDragging = document.getElementById(data);
@@ -582,21 +594,25 @@ const drawLine = (chart, text, x, y) => {
 	const scale = chart.scales['y'];
 
 	let pos = scale.top + 20;
+	let topEnd = top + 30;
 	let strokeStyle = '#FFFFFF60';
+	let fillStyle = '#FFFFFF';
 
 	if (text == 'Max' || text == 'Min') {
-		//pos = y - 20;
+		pos = y - 30;
+		topEnd = y - 20;
 		strokeStyle = '#FFFFFF20'
+		fillStyle = '#FFFFFF99'
 	}
 	
 	ctx.strokeStyle = strokeStyle;
 
 	ctx.beginPath();
 	ctx.moveTo(x, bottom);
-	ctx.lineTo(x, top + 30);
+	ctx.lineTo(x, topEnd);
 	ctx.stroke();
 
-	ctx.fillStyle = "#FFFFFF";
+	ctx.fillStyle = fillStyle;
 	ctx.textAlign = 'center';
 
 	ctx.fillText(text, x, pos);
@@ -1172,12 +1188,43 @@ const mixColors = (color1, color2, percent) => {
 const colorAt25 = getColorFromGradientAtY(50, ['#2d4b48', '#444a35', '#ffa900']);
 
 
+// HEADER GRADIENT
+
+/**
+ * 
+ * @param {DefaultPropsTemplate} props 
+ * @returns 
+ */
+export const HeaderGradient = (props) => {
+	const { styles, gradient } = props;
+
+	const gradientElementRef = createRef();
+
+	useEffect(() => {
+		gradientElementRef.current.classList.add(styles['show'])
+	}, [])
+
+	return (
+	<div 
+		ref={gradientElementRef}
+		style={{
+			background: gradient,
+		}}
+		className={`${styles['header-gradient']}`} >
+	</div>
+	)
+}
+
+
+
 // RADAR
 
 const mapboxToken = 'pk.eyJ1IjoiaXRzaXNhYWMxOSIsImEiOiJja2xiMmpraTEwZDIyMndvMzE5cGd1eTlyIn0.V2gQnHEAqZEugJKp82pUaQ';
 
 const RainViewerMaps = async () => {
-    const mapRequest = await fetch(`https://api.rainviewer.com/public/weather-maps.json`);
+    const mapRequest = await fetch(`https://api.rainviewer.com/public/weather-maps.json`, { 
+		next: { revalidate: (60 * 1) } 
+	});
     const mapResponse = await mapRequest.json();
     return mapResponse;
 };

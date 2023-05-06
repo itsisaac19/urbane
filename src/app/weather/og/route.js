@@ -12,8 +12,6 @@ const dating = (timeZoneOffset=0, timeZoneName='', coordinates=[]) => {
   let offsetDirection = parseInt(timeZoneOffset) > 0 ? '+' : '-';
 
   const tzDate = new Date().toLocaleString('en-US', 'UTC');
-
-  console.log('hello', tzDate)
   
   return (
   <div
@@ -49,23 +47,15 @@ export const contentType = 'image/png';
 export const alt = `The current temperature and weather. Detailed forecast from the NWS.`;
 
 // Make sure the font exists in the specified path:
-const font = async () => {
-  const manrope400Req = fetch(new URL('../../../../assets/manrope-latin-400-normal.ttf', import.meta.url));
-  const manrope700Req = fetch(new URL('../../../../assets/manrope-latin-700-normal.ttf', import.meta.url));
-
-  const [manrope400Res, manrope700Res] = await Promise.all([manrope400Req, manrope700Req]);
-  
-  const manrope400ArrayBuffer = await manrope400Res.arrayBuffer();
-  const manrope700ArrayBuffer = await manrope700Res.arrayBuffer();
+const font = async (origin) => {
+  console.log({origin})
+  const manrope400Req = await fetch(`${origin}/manrope-latin-400-normal.ttf`);
+  const manrope400ArrayBuffer = await manrope400Req.arrayBuffer();
 
   return {
     manrope400ArrayBuffer,
-    manrope700ArrayBuffer
   }
 }
-
-console.log(import.meta.url)
-
 
 export async function GET(request) {
   const search = request.nextUrl.search;
@@ -73,7 +63,7 @@ export async function GET(request) {
 
   const dateElement = dating(params.offset, params.zone, [params.lat, params.lon])
 
-  const {manrope400ArrayBuffer, manrope700ArrayBuffer} = await font();
+  const { manrope400ArrayBuffer } = await font(request.nextUrl.origin);
 
   const header = await WeatherHeader({
     latitude: params.lat,
@@ -111,12 +101,6 @@ export async function GET(request) {
         name: 'Manrope',
         data: manrope400ArrayBuffer,
         weight: 400,
-        style: 'normal',
-      },
-      {
-        name: 'Manrope',
-        data: manrope700ArrayBuffer,
-        weight: 700,
         style: 'normal',
       }
     ]

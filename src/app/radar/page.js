@@ -5,6 +5,7 @@ import styles from '../styles/radar.module.css';
 import { Navbar } from "@/app/navbar/navbar";
 import { manrope } from "../utils/fonts";
 
+export const revalidate = (60 * 5);
 
 import { CurrentTimer, Radar } from './Components/client';
 
@@ -25,7 +26,7 @@ export default async function Home({ searchParams }) {
 	const lastReqTime = dayjs().toISOString();
 
   return (
-    <div className={`${styles['master-wrap']} ${manrope.className}`}>
+    <div className={`${styles['master-wrap']} ${manrope.className} __className_15ca41`}>
         {Navbar(searchParams, 'radar')}
         <div className={styles['master-grid']}>
             <div className={`${styles['sub-grid-1']} `}>

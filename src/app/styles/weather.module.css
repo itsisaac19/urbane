@@ -49,6 +49,25 @@
     border-right: 1px solid;
     padding: 33px 33px 0 62px;
     position: relative;
+
+    background-size: 100% 81%;
+    background-image: linear-gradient(to bottom,rgba(0, 0, 0, 0.71), #1B1B1B);
+    background-repeat: no-repeat;
+}
+.header-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0%;
+
+    height: 80%;
+
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.header-gradient.show {
+    opacity: 1;
 }
 .weather-header {
     font-weight: 400;
@@ -795,8 +814,11 @@
     .weather-header {
         font-size: 42px;
     }
+    .weather-details {
+        margin-right: 23px;
+    }
     .weather-details-value {
-        font-size: 16px;
+        font-size: 14px;
     }
     .grid-card.tiles {
         padding: 4px;
