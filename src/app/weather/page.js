@@ -6,7 +6,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton } from './Components/client';
+import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton, HeaderGradient } from './Components/client';
 import { manrope } from "../utils/fonts";
 
 const dayjs = require('dayjs');
@@ -15,6 +15,8 @@ const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
+
+export const revalidate = 60;
 
 export default async function Home({ searchParams }) {
 
@@ -41,14 +43,15 @@ export default async function Home({ searchParams }) {
     }
 
   return (
-    <div className={`${styles['master-wrap']} ${manrope.className}`}>
+    <div className={`${styles['master-wrap']} ${manrope.className} __className_15ca41`}>
         {Navbar(searchParams, 'home')}
         <div className={styles['master-grid']}>
             <div className={`${styles['sub-grid-1']} ${styles['temp-fixed']}`}>
                 <div className={`${styles['grid-card']} ${styles['header']}`}>
+
                     <div className={`${styles['weather-header']}`}>
-						<Suspense fallback={<div>IT'S ___________ AND _____________ IN ____________</div>}>
-                        	<WeatherHeader {...defaultProps} />
+						<Suspense fallback={<div>IT'S ____ AND ________ IN _________.</div>}>
+                            <WeatherHeader {...defaultProps} />
 						</Suspense>
 						
                     </div>
