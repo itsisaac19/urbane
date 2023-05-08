@@ -7,6 +7,7 @@ import { generateTemperatureGradient } from "@/app/utils/colors";
 
 /**
  * @typedef {Object} DefaultPropsTemplate
+ * @property {Promise} req - The function call request. May be resolved depending on timing.
  * @property {number} latitude - The latitude of the location.
  * @property {number} longitude - The longitude of the location.
  * @property {string} city - The name of the city.
@@ -26,7 +27,7 @@ import { generateTemperatureGradient } from "@/app/utils/colors";
  * @param {AdjustedDayjsOptions} options
  * @returns {Dayjs} dayjs() instance with adjusted the timezone
  */
-const adjustedDayjsInstance = (options) => {
+export const adjustedDayjsInstance = (options) => {
   if (options.dateString) {
     return dayjs(options.dateString).utcOffset(options.timeZoneOffset)
   }
@@ -40,13 +41,28 @@ const adjustedDayjsInstance = (options) => {
   return dayjs().utcOffset(options.timeZoneOffset)
 };
 
-export const OpenMeteoData = async (customParamString='', props={
-    startDate: '',
-    endDate: '',
-    latitude: 0,
-    longitude: 0,
-    units: ''
-}) => {
+
+const Manager = {
+  req: null,
+  res: null
+};
+
+/**
+ * @typedef {Object} OpenMeteoProps
+ * @property {string} startDate
+ * @property {string} endDate
+ * @property {number} latitude
+ * @property {number} longitude
+ * @property {string} units
+ * @property {boolean} latch
+ * 
+ * @param {OpenMeteoProps} props
+*/
+export const OpenMeteoData = async (customParamString='', props) => {
+    if (props.latch) {
+
+    }
+
     const startAndEnd = `&start_date=${props.startDate}&end_date=${props.endDate}`;
     
     let unitString = '';
@@ -56,8 +72,8 @@ export const OpenMeteoData = async (customParamString='', props={
     
     const reqString = `https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`
     const openMeteoRequest = await fetch(reqString);
-    //console.log({props})
 
+    console.log({reqString})
 
     return openMeteoRequest.json();
 }
@@ -297,6 +313,7 @@ const parseOpenWeatherMapCode = (code) => {
  */
 export const WeatherHeader = async (props) => {
     const {
+      req,
       latitude, 
       longitude, 
       city, 
@@ -307,27 +324,14 @@ export const WeatherHeader = async (props) => {
       og
     } = props;
 
-    console.log({timeZoneOffset, og})
-    
-    const startDate = dayjs().format('YYYY-MM-DD');
-    const endDate = startDate;
-
-    console.log(startDate)
-
-    const openMeteoData = await OpenMeteoData('&current_weather=true', {
-        startDate,
-        endDate,
-        latitude,
-        longitude,
-        units
-    })
+    let openMeteoData = await req;
 
 /*     const openWeatherMapReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=226665da3951803c74770f482ea4c65b`)
     const openWeatherMapData = await openWeatherMapReq.json(); */
 
-
     const currentTemp = Math.round(openMeteoData.current_weather.temperature);
     const currentWeather = parseWeatherCode(openMeteoData.current_weather.weathercode);
+    console.log({openMeteoData})
     //const currentWeather = parseOpenWeatherMapCode(openWeatherMapData.weather[0].id);
 
     const gradient = generateTemperatureGradient(currentTemp);
@@ -429,6 +433,7 @@ const sunriseSunset = () => {
  */
 export const WeatherTiles = async (props) => {
     const {
+      req,
       latitude, 
       longitude, 
       city, 
@@ -439,20 +444,7 @@ export const WeatherTiles = async (props) => {
       og
     } = props;
 
-    const startDate = adjustedDayjsInstance({
-      timeZoneOffset
-    }).format('YYYY-MM-DD');
-    const endDate = adjustedDayjsInstance({
-      timeZoneOffset
-    }).add(15, 'days').format('YYYY-MM-DD');
-
-    const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
-        startDate,
-        endDate,
-        latitude,
-        longitude,
-        units
-    })
+    let openMeteoData = await req;
 
     const [hourlyWeather, hourlyUnits] = [openMeteoData.hourly, openMeteoData.hourly_units];
     const [dailyWeather, dailyUnits] = [openMeteoData.daily, openMeteoData.daily_units];
@@ -618,32 +610,18 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
  */
 export const Chart = async (props) => {
     const {
+      req,
       latitude, 
       longitude, 
       city, 
       units, 
       precision, 
       styles, 
-      timeZoneOffset
+      timeZoneOffset,
+      og
     } = props;
 
-    const startDate = adjustedDayjsInstance({
-      timeZoneOffset
-    }).format('YYYY-MM-DD');
-    
-    // Maximum 7-day timeframe
-    const endDate = adjustedDayjsInstance({
-      timeZoneOffset
-    }).add(6, 'days').format('YYYY-MM-DD');
-
-
-    const openMeteoData = await OpenMeteoData('&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
-        startDate,
-        endDate,
-        latitude,
-        longitude,
-        units
-    })
+    let openMeteoData = await req;
 
     const hourlyWeather = openMeteoData.hourly;
     let currentTime = adjustedDayjsInstance({

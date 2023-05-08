@@ -63,15 +63,12 @@ export function generateTemperatureGradient(temperature, options) {
         endColor.darken(0)
 
         return `linear-gradient(155deg, ${startColor.toRgbString()} 0%, ${endColor.toRgbString()} 30%, #1B1B1B50 70%), 
-        linear-gradient(85deg, ${startColor.spin(50).toRgbString()} 0%, ${endColor.spin(50).toRgbString()} 30%, #1B1B1B50 70%)`;
+        linear-gradient(85deg, ${startColor.spin(0).toRgbString()} 0%, ${endColor.spin(0).toRgbString()} 30%, #1B1B1B50 70%)`;
       }
-
-      startColor.setAlpha(0.5)
-      endColor.setAlpha(0.5)
     
       const percentage = (temperature % 100) / 100;
       const interpolatedColor = interpolateColor(startColor, endColor, percentage);
     
       return `linear-gradient(155deg, ${startColor.toRgbString()} 0%, ${endColor.toRgbString()} 30%, #1B1B1B50 70%), 
-      linear-gradient(85deg, ${startColor.spin(100).toRgbString()} 0%, ${endColor.spin(100).toRgbString()} 30%, #1B1B1B50 70%)`;
+      linear-gradient(85deg, ${startColor.spin(0).toRgbString()} 0%, ${endColor.spin(0).toRgbString()} 30%, #1B1B1B50 70%)`;
     }

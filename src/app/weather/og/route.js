@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/server'; // REQUIRES NEXT 13.3
-import { WeatherHeader, DetailedWeather } from '../Components/server';
+import { WeatherHeader, DetailedWeather, OpenMeteoData, adjustedDayjsInstance } from '../Components/server';
 import dayjs from 'dayjs';
 const utc = require('dayjs/plugin/utc')
 const timezone = require('dayjs/plugin/timezone')
@@ -66,13 +66,29 @@ export async function GET(request) {
 
   const { manrope400ArrayBuffer } = await font(request.nextUrl.origin);
 
+  const startDate = adjustedDayjsInstance({
+      timeZoneOffset: parseFloat(params.offset)
+  }).format('YYYY-MM-DD');
+  const endDate = adjustedDayjsInstance({
+      timeZoneOffset: parseFloat(params.offset)
+  }).add(15, 'days').format('YYYY-MM-DD');
+
+  const masterWeatherData = OpenMeteoData('&current_weather=true', {
+      startDate,
+      endDate,
+      latitude: params.lat,
+      longitude: params.lon,
+      units: params.units
+  });
+
   const header = await WeatherHeader({
     latitude: params.lat,
     longitude: params.lon,
     city: params.city,
     units: params.units,
     timeZoneOffset: params.offset,
-    og: true
+    og: true,
+    req: masterWeatherData
   })
   
   console.log(header.props['data-gradient'])

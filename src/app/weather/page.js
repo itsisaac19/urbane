@@ -1,18 +1,17 @@
 import styles from '../styles/weather.module.css';
 
-import { WeatherHeader, DetailedWeather, WeatherTiles, Chart } from './Components/server';
+import { OpenMeteoData, WeatherHeader, DetailedWeather, WeatherTiles, Chart, adjustedDayjsInstance } from './Components/server';
 import { Navbar } from "@/app/navbar/navbar";
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton, HeaderGradient } from './Components/client';
+import { ClockTiles, ReadableDate, Countdown, ChartTabs, Radar, ShareButton } from './Components/client';
 import { manrope } from "../utils/fonts";
 
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
-
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -41,6 +40,24 @@ export default async function Home({ searchParams }) {
         styles: styles,
         timeZoneOffset: parseInt(searchParams.offset),
     }
+
+
+    const startDate = adjustedDayjsInstance({
+        timeZoneOffset: defaultProps.timeZoneOffset
+    }).format('YYYY-MM-DD');
+    const endDate = adjustedDayjsInstance({
+        timeZoneOffset: defaultProps.timeZoneOffset
+    }).add(15, 'days').format('YYYY-MM-DD');
+    
+    const masterWeatherData = OpenMeteoData('&current_weather=true&hourly=temperature_2m,apparent_temperature,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weathercode,surface_pressure,cloudcover,visibility,windspeed_10m,winddirection_10m,windgusts_10m&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,windspeed_10m_max,windgusts_10m_max,winddirection_10m_dominant', {
+        startDate,
+        endDate,
+        latitude: defaultProps.latitude,
+        longitude: defaultProps.longitude,
+        units: defaultProps.units
+    });
+
+    defaultProps.req = masterWeatherData;
 
   return (
     <div className={`${styles['master-wrap']} ${manrope.className} __className_15ca41`}>
