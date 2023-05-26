@@ -31,7 +31,7 @@ export const DetectCurrentButton = (props) => {
     const [detectedURL, setDetectedURL] = useState('');
 
     const reverseGeocode = async (lat, lon) => {
-        const reverseCall = await fetch(`http://api.timezonedb.com/v2.1/get-time-zone?key=BWVZN4WKKL2J&format=json&by=position&lat=${lat}&lng=${lon}`)
+        const reverseCall = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=BWVZN4WKKL2J&format=json&by=position&lat=${lat}&lng=${lon}`)
         const reverseResponse = await reverseCall.json();
 
         console.log({reverseResponse});
