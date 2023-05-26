@@ -22,6 +22,7 @@
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^13.4.1"
+    "@next/bundle-analyzer": "^13.4.1",
+    "next-plugin-preact": "^3.0.7"
   }
 }
