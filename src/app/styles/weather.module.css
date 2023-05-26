@@ -45,34 +45,37 @@
 
 .grid-card.header {
     width: auto;
-    height: 100%;
-    border-right: 1px solid;
-    padding: 33px 33px 0 62px;
+    height: auto;
+    border: 1px solid;
+    padding: 33px 33px 33px 33px;
     position: relative;
-
-    background-size: 100% 81%;
-    background-image: linear-gradient(to bottom,rgba(0, 0, 0, 0.71), #1B1B1B);
-    background-repeat: no-repeat;
+    background: #1b1b1b2e;
+    border-radius: 0px;
+    margin: 10px;
+    border: none;
+    overflow: hidden;
 }
 .header-gradient {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -9px;
+    left: -10px;
     right: 0%;
-
-    height: 80%;
+    height: calc(100% + 20px);
 
     z-index: -1;
     opacity: 0;
     transition: opacity 0.5s ease;
+
+    background-blend-mode: darken;
 }
 .header-gradient.show {
     opacity: 1;
 }
 .weather-header {
+    position: relative;
     font-weight: 400;
     font-size: 50px;
-    text-transform: uppercase;
+    text-transform: none;
     line-height: 115.6%;
 
     padding: 0 0 0px 0;
@@ -81,7 +84,7 @@
     color: var(--temporal-greeting-text);
 }
 .weather-header .filler {
-    color: var(--tertiary-greeting-text);
+    color: var(--accent-text);
 }
 .weather-header .weather-info {
     color: var(--accent-text);
@@ -93,7 +96,7 @@
     font-weight: 400;
     font-size: 18px;
     line-height: 1.4em;
-    color: var(--secondary-text);
+    color: var(--accent-text);
 }
 .weather-details-value u {
     text-decoration: none;
@@ -111,7 +114,7 @@
     row-gap: 4px;
 }
 .weather-updates .time-value {
-    color: var(--accent-text);
+    color: var(--secondary-text);
 }
 .weather-updates .filler {
     color: var(--secondary-text);
@@ -806,7 +809,7 @@
         max-height: 40vh;
     }
     .grid-card.header {
-        padding: 23px 23px 0 33px;
+        padding: 23px 23px 23px 23px;
     }
     .greeting {
         display: none;

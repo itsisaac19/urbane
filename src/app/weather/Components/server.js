@@ -73,7 +73,7 @@ export const OpenMeteoData = async (customParamString='', props) => {
     const reqString = `https://api.open-meteo.com/v1/forecast?latitude=${props.latitude}&longitude=${props.longitude}${unitString}${customParamString}${startAndEnd}&timezone=auto`
     const openMeteoRequest = await fetch(reqString);
 
-    console.log({reqString})
+    //console.log({reqString})
 
     return openMeteoRequest.json();
 }
@@ -324,18 +324,49 @@ export const WeatherHeader = async (props) => {
       og
     } = props;
 
-    let openMeteoData = await req;
+    const sunriseSunsetCall = new Promise(async (resolve) => {
+      const sunriseSunsetResponse = await fetch(`https://api.sunrise-sunset.org/json?lat=${latitude}&lng=${longitude}&date=${adjustedDayjsInstance({ timeZoneOffset }).format('YYYY-MM-DD')}&formatted=0`)
+      const data = await sunriseSunsetResponse.json();
+      resolve(data);
+    })
 
+    let [openMeteoData, sunriseSunsetData] = await Promise.all(
+      [
+        req, 
+        sunriseSunsetCall
+      ]
+    );
+    
 /*     const openWeatherMapReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=226665da3951803c74770f482ea4c65b`)
     const openWeatherMapData = await openWeatherMapReq.json(); */
 
     const currentTemp = Math.round(openMeteoData.current_weather.temperature);
     const currentWeather = parseWeatherCode(openMeteoData.current_weather.weathercode);
-    console.log({openMeteoData})
+    //console.log({openMeteoData})
     //const currentWeather = parseOpenWeatherMapCode(openWeatherMapData.weather[0].id);
 
-    const gradient = generateTemperatureGradient(currentTemp);
-    const ogGradient = generateTemperatureGradient(currentTemp, {og: true});
+    const sunset = dayjs(sunriseSunsetData.results.sunset)
+    const sunrise = dayjs(sunriseSunsetData.results.sunrise)
+    const curr = adjustedDayjsInstance({ timeZoneOffset });
+
+    let night = true;
+    if (curr.isAfter(sunrise)) {
+      night = false;
+      if (curr.isAfter(sunset)) {
+        night = true
+      } 
+    }
+
+    const gradient = generateTemperatureGradient(currentTemp, 
+      { units, night }
+    );
+    const ogGradient = generateTemperatureGradient(currentTemp, 
+      {
+        og: true, 
+        units, 
+        night
+      }
+    );
 
     if (og === true) {
         return (
@@ -358,9 +389,9 @@ export const WeatherHeader = async (props) => {
     return (
         <>
         <span data-header-gradient={gradient} className={`${styles['greeting']}`}>{/* {GreetingText()} */}</span> 
-        <span className={`${styles['filler']}`}>IT'S </span> 
-        <span className={`${styles['weather-info']}`}><span className={units}>{currentTemp}</span> <span className={`${styles['filler']}`}> AND </span> {currentWeather}</span> 
-        <span className={`${styles['filler']}`}> IN </span> 
+        <span className={`${styles['filler']}`}>It's </span> 
+        <span className={`${styles['weather-info']}`}><span className={units}>{currentTemp}</span> <span className={`${styles['filler']}`}> and </span> {currentWeather}</span> 
+        <span className={`${styles['filler']}`}> in </span> 
         <span className={`${styles['weather-info']}`}>{city}.</span>
         <HeaderGradient {...props} gradient={gradient} />
         </>
@@ -556,6 +587,12 @@ export const DetailedWeather = async ({latitude, longitude, og}) => {
     const nwsRequest = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`);
     const nwsData = await nwsRequest.json();
   
+
+    if (nwsData.status == 404) {
+      console.log({nwsData})
+      return <></>;
+    }
+
     const nwsForecastRequest = await fetch(nwsData.properties.forecast);
     const nwsForecastData = await new Promise(async resolve => {
       let initial = await nwsForecastRequest.json();

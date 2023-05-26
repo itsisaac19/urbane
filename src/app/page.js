@@ -1,51 +1,19 @@
-'use client'
-import { createRef, useEffect } from 'react';
-import styles from './styles/Home.module.css'
+import styles from './styles/Home.module.css';
+import { manrope } from './utils/fonts';
+import { DetectCurrentButton, SearchInput } from './components/indexClient';
+import { SuggestedLocations } from './components/indexServer';
+import { Suspense } from 'react';
 
-async function getData() {
-  const dynamicData = await fetch(`https://jsonplaceholder.typicode.com/users`, { cache: 'no-store' });
-  const data = await dynamicData.json();
+export default function Home({ searchParams }) {
+  console.log(searchParams)
+  const suggestedLocationList = [];
 
-  return data;
-}
+  if (searchParams.lat && searchParams.lon) {
 
-export default function Home() {
-  const detectRef = createRef();
-  
-  useEffect(() => {
-    const geocodeSearchString = async (locationSearchString) => {
-      const geocodeReq = fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${locationSearchString}.json?types=place&access_token=pk.eyJ1IjoiaXRzaXNhYWMxOSIsImEiOiJja2xiMmpraTEwZDIyMndvMzE5cGd1eTlyIn0.V2gQnHEAqZEugJKp82pUaQ`)
-      const geocodeData = await geocodeReq.json();
-
-      console.log(geocodeData)
-    }
-
-    const detectLocation = async () => {
-      const success = (pos) => {
-        const crd = pos.coords;
-      
-        console.log("Your current position is:");
-        console.log(`Latitude : ${crd.latitude}`);
-        console.log(`Longitude: ${crd.longitude}`);
-        console.log(`More or less ${crd.accuracy} meters.`);
-      }
-
-      const error = (err) => {
-        console.warn(`ERROR(${err.code}): ${err.message}`);
-      }
-
-      navigator.geolocation.getCurrentPosition(success, error, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      });
-    }
-
-    detectRef.current.addEventListener('click', detectLocation)
-  })
+  } 
 
   return (
-    <div className={styles['hero-content']}>
+    <div className={`${styles['hero-content']} ${manrope.className}`}>
       <div className={styles['hero-letters']}>
         <svg className={styles.letters} width="188" height="1063" viewBox="0 0 188 1063" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M90 906V774H188V789.492H105.715V830.833H188V846.325H105.715V890.508H188V906H90Z" fill="#CCC5B9"/>
@@ -65,35 +33,34 @@ export default function Home() {
         </svg>
       </div>
 
-      <div className={styles['hero-middle-section']}>
+      <div className={styles['hero-section']}>
 
-        <div className={styles['header-grid']}>
-          <svg width="96" height="166" viewBox="0 0 96 166" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="166" fill="#252422"/>
-            <rect x="32" width="32" height="166" fill="#DC977A"/>
-            <rect x="64" width="32" height="166" fill="#403D39"/>
-          </svg>
-
-          <h1 className={styles['home-urbane-text']}>URBANE</h1>
-
-          <svg width="96" height="166" viewBox="0 0 96 166" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="166" fill="#403D39"/>
-            <rect x="32" width="32" height="166" fill="#80BCBD"/>
-            <rect x="64" width="32" height="166" fill="#252422"/>
-          </svg>
-        </div>
+        <h1 className={styles['hero-hook']}>Experience Weather Reporting Delivered with <span className={styles['accent']}>Unbeatable Speed and Precision</span></h1>
 
 
         <div className={styles['location-outer']}>
-          <input type="text" placeholder={'Enter a city to get started'} />
-          <div className={styles['search-results-wrap']}>
-            <div className={styles['search-results-grid']}>
-              <span className={styles['search-result']}>Manchester City</span>
-              <span className={styles['search-result']}>Shoreview, MN</span>
+          <div className={styles['location-search']}>
+            <SearchInput />
+            <div className={styles['search-results-wrap']}>
+              <div className={styles['suggested-box']}>
+                <div className={styles['suggested-text']}>
+                  SUGGESTED LOCATIONS
+                </div>
+              </div>
+              <div className={styles['search-results-grid']}>
+                <Suspense>
+                  <SuggestedLocations locations={suggestedLocationList} styles={styles} />
+                </Suspense>
+              </div>
             </div>
           </div>
 
-          <button ref={detectRef} className={styles['detect-button']}>Detect my current location</button>
+
+          <div className={styles['location-detect']}>
+          <DetectCurrentButton />
+          <div className={styles['detected-wrap']}></div>
+          </div>
+
         </div>
       </div>
       

@@ -18,7 +18,7 @@ const dating = (timeZoneOffset=0, timeZoneName='', coordinates=[]) => {
     style={{
       display: 'flex',
       padding: '0px 70px 70px 70px',
-      color: '#b8aea2',
+      color: '#e5e0d7',
       marginTop: 'auto',
       fontSize: '25px',
       fontWeight: 700,
@@ -107,7 +107,7 @@ export async function GET(request) {
             top: '0%',
             left: '0%',
             right: '0%',
-            bottom: '30%',
+            bottom: '0%',
             padding: "0px 0px 0px 0px",
             background: header.props['data-gradient'],
         }
@@ -123,9 +123,8 @@ export async function GET(request) {
           right: '0%',
           bottom: '0%',
           padding: "0px 0px 0px 0px",
-          backgroundSize: '100% 100%',
-          backgroundImage: 'linear-gradient(to bottom,rgba(0, 0, 0, 0.51), #1B1B1B 70%)',
-          backgroundRepeat: 'no-repeat',
+          opacity: 0.3,
+          background: 'url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj4NCiAgICA8ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCI+DQogICAgICA8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPg0KICAgICAgPGZlQmxlbmQgbW9kZT0ic2NyZWVuIi8+DQogICAgPC9maWx0ZXI+DQogICAgPHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjEiLz4NCjwvc3ZnPg==)',
       }
     }></span>
   )

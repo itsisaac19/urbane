@@ -16,7 +16,14 @@ export default async function Home({ searchParams }) {
     console.log({searchParams})
 
     if (!(searchParams.lat && searchParams.lon && searchParams.units && searchParams.city && searchParams.offset)) {
-        //redirect('/');
+        searchParams = {
+            lat: '44.97997',
+            lon: '-93.26384',
+            city: 'Minneapolis',
+            zone: 'America/Chicago',
+            offset: '-300',
+            units: 'imperial'
+        }
     }
 
     const coordinates = [searchParams.lat, searchParams.lon];

@@ -65,9 +65,9 @@ const loadBaseRadarMosaicList = async (tileSize) => {
         } catch (error) {
             /* const converter = (await import('xml-js')).xml2js; 
             let GetCapabilitiesJSON = converter(res, {compact: true, spaces: 4})
-            let timeDimensionsArray = GetCapabilitiesJSON.WMS_Capabilities.Capability.Layer.Layer.Dimension['_text'].split(',');
+            let timeDimensionsArray = GetCapabilitiesJSON.WMS_Capabilities.Capability.Layer.Layer.Dimension['_text'].split(',')*/
 
-            console.log('wait...') */
+            console.log('needed') 
         }
     })
 

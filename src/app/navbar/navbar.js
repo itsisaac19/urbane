@@ -5,7 +5,7 @@ export const Navbar = (searchParams, label) => {
 
     return (
         <div className="navigation-grid">
-            <div className="urbane">URBANE</div>
+            <Link href={`/`} className="urbane">URBANE</Link>
             <div className="tabs">
                 <Link href={`/weather?${navSearchParams}`} className={`home tab ${label == 'home' ? 'active' : null}`}>
                 HOME

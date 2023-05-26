@@ -68,7 +68,13 @@ export const Countdown = ({lastReqTime}) => {
 	return (<span>{countdownText}</span>)
 }
 
+import { useSearchParams } from 'next/navigation'
+
 export const ClockTiles = ({styles}) => {
+	const searchParams = useSearchParams();
+	const units = searchParams.get('units');
+	console.log(units)
+
     const clockRef = createRef();
 
     const h1Grid = createRef();
@@ -730,9 +736,6 @@ const getOrCreateTooltip = (chart) => {
 	tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
 };
 
-import { ScrollContainer } from 'react-indiana-drag-scroll'
-import 'react-indiana-drag-scroll/dist/style.css';
-import { Dayjs } from 'dayjs';
 
 export const ChartTabs = (props) => {
 	const { styles } = props;
@@ -767,13 +770,13 @@ export const ChartTabs = (props) => {
 	}
 
 	return (
-		<ScrollContainer
+		<div
 			className={`${styles['analyze-tab-bar']}`}
 		>
 			<div className={`${styles['analyze-tabs-grid']}`}>
 				{tabsChildren}
 			</div>
-		</ScrollContainer>
+		</div>
 	);
 }
 

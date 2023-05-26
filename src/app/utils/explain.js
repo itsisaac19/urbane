@@ -44,7 +44,6 @@ export const getWeatherDescription = (betterLabel) => {
     return description;
 }
 
-import { linearRegression } from "simple-statistics";
 
 
 /**
@@ -57,32 +56,8 @@ import { linearRegression } from "simple-statistics";
 export const analyze384hourArray = (weatherData384Array, paramName, config={
     threshold: 50
 }) => {
-    const textAnalyzations = [];
 
-    // Calculate average
-    const avgTemp = weatherData384Array.reduce((acc, curr) => acc + curr, 0) / weatherData384Array.length;
-    console.log(`The average during the 384 hours was ${avgTemp} degrees Celsius.`);
 
-    // Find maximum and minimum
-    const maxTemp = Math.max(...weatherData384Array);
-    const minTemp = Math.min(...weatherData384Array);
-    console.log(`The maximum during the 384 hours was ${maxTemp} degrees Celsius, and the minimum was ${minTemp} degrees Celsius.`);
-
-    // Analyze trend over time
-    const trend = [];
-    for (let i = 0; i < weatherData384Array.length - 1; i++) {
-    const tempDiff = weatherData384Array[i + 1] - weatherData384Array[i];
-    trend.push(tempDiff);
-    }
-    const positiveTrend = trend.filter(diff => diff > 0).length;
-    const negativeTrend = trend.filter(diff => diff < 0).length;
-    console.log(`The was trending up ${positiveTrend} times and trending down ${negativeTrend} times.`);
-
-    const oneDay = weatherData384Array.slice(0, 23)
-    const timeData = oneDay.map((data, i) => i);
-    const regression = linearRegression([timeData, oneDay]);
-    console.log({regression, oneDay})
-
-    return textAnalyzations;
+    return [''];
 }
 
